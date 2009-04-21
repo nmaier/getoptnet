@@ -12,7 +12,8 @@ namespace NMaier.GetOptNet
     public class Argument : Attribute
     {
         private string arg = "";
-        private string helptext;
+        private string helptext = "";
+        private string helpvar = "";
         private ArgumentCollision collision = ArgumentCollision.Ignore;
 
 
@@ -24,6 +25,11 @@ namespace NMaier.GetOptNet
             get { return helptext; }
             set { helptext = value; }
         }
+        public string Helpvar
+        {
+            get { return helpvar; }
+            set { helpvar = value; }
+        }
         public ArgumentCollision OnCollision
         {
             get { return collision; }
@@ -31,7 +37,7 @@ namespace NMaier.GetOptNet
         }
     }
 
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
     public class ShortArgument : Attribute
     {
         private char arg;
@@ -47,6 +53,13 @@ namespace NMaier.GetOptNet
         public string GetAlias() { return alias; }
     }
 
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
+    public class ShortArgumentAlias : Attribute
+    {
+        private char alias;
+        public ShortArgumentAlias(char aAlias) { alias = aAlias; }
+        public char GetAlias() { return alias; }
+    }
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
     public class Counted : Attribute { }
 
@@ -69,11 +82,18 @@ namespace NMaier.GetOptNet
         THROW
     }
 
+    public enum AliasShowOption
+    {
+        SHOW,
+        HIDE
+    }
+
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class GetOptOptions : Attribute
     {
         private ArgumentPrefixType apt = ArgumentPrefixType.Both;
         private UnknownArgumentsAction uaa = UnknownArgumentsAction.IGNORE;
+        private AliasShowOption aso = AliasShowOption.HIDE;
 
         public GetOptOptions() { }
         public ArgumentPrefixType AcceptPrefix
@@ -85,6 +105,11 @@ namespace NMaier.GetOptNet
         {
             get { return uaa; }
             set { uaa = value; }
+        }
+        public AliasShowOption ShowAliasesInUsage
+        {
+            get { return aso; }
+            set { aso = value; }
         }
     }
 }

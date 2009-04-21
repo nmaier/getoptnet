@@ -41,11 +41,17 @@
     <Compile Include="Attributes.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="GetOpt.cs" />
+    <Compile Include="GetOpt_Initialize.cs" />
+    <Compile Include="GetOpt_Update.cs" />
+    <Compile Include="GetOpt_Usage.cs" />
     <Compile Include="Handlers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Tests\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
