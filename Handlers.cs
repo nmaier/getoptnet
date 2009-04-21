@@ -1,7 +1,33 @@
-﻿using System.Reflection;
+﻿/*
+ * Copyright (c) 2009 Nils Maier
+ * 
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+using System.Reflection;
 using System.ComponentModel;
 using System;
 using System.Collections.Generic;
+
 namespace NMaier.GetOptNet
 {
     abstract internal class ArgumentHandler
@@ -74,7 +100,8 @@ namespace NMaier.GetOptNet
         {
             if (wasSet)
             {
-                switch (collision) {
+                switch (collision)
+                {
                     case ArgumentCollision.Throw:
                         throw new DuplicateArgumentException(String.Format("Argument {0} is specified more than once", Name));
                     case ArgumentCollision.Ignore:
@@ -160,7 +187,7 @@ namespace NMaier.GetOptNet
         public override void Assign(string toAssign)
         {
             listType.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign) });
-                    }
+        }
         public override void Finish()
         {
             InternalAssign(listType.GetMethod("ToArray").Invoke(list, null));
@@ -191,7 +218,7 @@ namespace NMaier.GetOptNet
 
         public override void Assign(string toAssign)
         {
-            type.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign) });            
+            type.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign) });
         }
         public override void Finish()
         {
