@@ -133,6 +133,10 @@ namespace NMaier.GetOptNet
     }
     abstract public partial class GetOpt
     {
+
+        /// <summary>
+        /// Print the usage to the allocated console (stdout).
+        /// </summary>
         public void PrintUsage()
         {
             int ww = 80;
@@ -149,6 +153,12 @@ namespace NMaier.GetOptNet
             }
             Console.Write(AssembleUsage(ww));
         }
+
+        /// <summary>
+        /// Assemble Usage.
+        /// </summary>
+        /// <param name="width">Maximal width of a line in the usage string</param>
+        /// <returns>Usage</returns>
         public string AssembleUsage(int width)
         {
             Type me = GetType();
@@ -179,6 +189,10 @@ namespace NMaier.GetOptNet
                         continue;
                     }
                     string longName = String.IsNullOrEmpty(la[0].GetArg()) ? info.Name : la[0].GetArg();
+                    if (opts.CaseType == ArgumentCaseType.Insensitive || opts.CaseType == ArgumentCaseType.OnlyLower)
+                    {
+                        longName = longName.ToLower();
+                    }
                     if (sa.Length != 0)
                     {
                         name = new string(sa[0].GetArg(), 1);
@@ -201,11 +215,16 @@ namespace NMaier.GetOptNet
                     {
                         oi.Shorts.Add(new string(sa[0].GetArg(), 1));
                     }
-                    if (opts.UsageShowAliases == UsageAliasShowOption.SHOW)
+                    if (opts.UsageShowAliases == UsageAliasShowOption.Show)
                     {
                         foreach (ArgumentAlias alias in info.GetCustomAttributes(typeof(ArgumentAlias), true))
                         {
-                            oi.Longs.Add(alias.GetAlias());
+                            string an = alias.GetAlias();
+                            if (opts.CaseType == ArgumentCaseType.Insensitive || opts.CaseType == ArgumentCaseType.OnlyLower)
+                            {
+                                an = an.ToLower();
+                            }                            
+                            oi.Longs.Add(an);
                         }
                         foreach (ShortArgumentAlias alias in info.GetCustomAttributes(typeof(ShortArgumentAlias), true))
                         {

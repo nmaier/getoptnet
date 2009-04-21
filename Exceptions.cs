@@ -27,28 +27,65 @@ using System;
 
 namespace NMaier.GetOptNet
 {
+    /// <summary>
+    /// Custom exception that is thrown whenever the programmer made a mistake
+    /// </summary>
     public class ProgrammingError : SystemException
     {
+        /// <summary>
+        /// Constructs a ProgrammingError exception
+        /// </summary>
+        /// <param name="Message">Message associated with the exception</param>
         public ProgrammingError(string Message) : base(Message) { }
     }
 
+    /// <summary>
+    /// Base exception for GetOptNet
+    /// </summary>
     public class GetOptException : Exception
     {
+        /// <summary>
+        /// Constructs a GetOptException exception
+        /// </summary>
+        /// <param name="Message">Message associated with the exception</param>
         public GetOptException(string Message) : base(Message) { }
     }
 
+    /// <summary>
+    /// Thrown when an unknown attribute is supplied by the user.
+    /// <seealso cref="GetOptOptions.OnUnknownArgument"/>
+    /// </summary>
     public class UnknownAttributeException : GetOptException
     {
+        /// <summary>
+        /// Constructs a UnknownAttributeException exception
+        /// </summary>
+        /// <param name="Message">Message associated with the exception</param>
         public UnknownAttributeException(string Message) : base(Message) { }
     }
 
+    /// <summary>
+    /// Thrown when the user supplied a value for an argument that isn't compatible with the argument type
+    /// </summary>
     public class InvalidValueException : GetOptException
     {
+        /// <summary>
+        /// Constructs a InvalidValueException exception
+        /// </summary>
+        /// <param name="Message">Message associated with the exception</param>
         public InvalidValueException(string Message) : base(Message) { }
     }
 
+    /// <summary>
+    /// Thrown when the user supplied an argument more than once and the argument does not support this.
+    /// <seealso cref="Argument.OnCollision"/>
+    /// </summary>
     public class DuplicateArgumentException : GetOptException
     {
+        /// <summary>
+        /// Constructs a DuplicateArgumentException exception
+        /// </summary>
+        /// <param name="Message">Message associated with the exception</param>
         public DuplicateArgumentException(string Message) : base(Message) { }
     }
 }

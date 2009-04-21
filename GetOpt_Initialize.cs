@@ -93,7 +93,7 @@ namespace NMaier.GetOptNet
                     {
                         continue;
                     }
-                    if (opts.AcceptPrefix == ArgumentPrefixType.None)
+                    if (opts.AcceptType == ArgumentPrefixType.None)
                     {
                         throw new ProgrammingError("You used Prefix=None, hence there are no arguments allowed!");
                     }
@@ -102,6 +102,10 @@ namespace NMaier.GetOptNet
                     if (String.IsNullOrEmpty(name))
                     {
                         name = info.Name;
+                    }
+                    if (opts.CaseType == ArgumentCaseType.Insensitive || opts.CaseType == ArgumentCaseType.OnlyLower)
+                    {
+                        name = name.ToLower();
                     }
                     if (longs.ContainsKey(name))
                     {
@@ -140,6 +144,10 @@ namespace NMaier.GetOptNet
                     foreach (ArgumentAlias alias in info.GetCustomAttributes(typeof(ArgumentAlias), true))
                     {
                         string an = alias.GetAlias();
+                        if (opts.CaseType == ArgumentCaseType.Insensitive || opts.CaseType == ArgumentCaseType.OnlyLower)
+                        {
+                            an = an.ToLower();
+                        }
                         if (longs.ContainsKey(an))
                         {
                             throw new ProgrammingError(String.Format("Duplicate alias argument {0}", an));

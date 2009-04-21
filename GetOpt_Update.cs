@@ -26,30 +26,21 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace NMaier.GetOptNet
 {
     abstract public partial class GetOpt
     {
-        private void UpdateHandler(ArgumentHandler handler, string value, string arg)
-        {
-            try
-            {
-                handler.Assign(value);
-            }
-            catch (ArgumentException ex)
-            {
-                throw new ProgrammingError(ex.Message);
-            }
-            catch (NotSupportedException ex)
-            {
-                throw new InvalidValueException(String.Format("Wrong value type for argument \"{0}\": {1}", arg, ex.Message));
-            }
-            catch (Exception ex)
-            {
-                throw new ProgrammingError(ex.Message);
-            }
-        }
+        /// <summary>
+        /// Updates the parsed argument collection, but does not yet assign it back.
+        /// See Also: <seealso cref="GetOpt.Parse()"/>
+        /// </summary>
+        /// <exception cref="ProgrammingError">You messed something up</exception>
+        /// <exception cref="UnknownAttributeException">The user supplied an argument that isn't recognized from it's name. <see cref="GetOptOptions.OnUnknownArgument"/></exception>
+        /// <exception cref="InvalidValueException">The user supplied a value for an argument that cannot parsed to the correct type.</exception>
+        /// <exception cref="DuplicateArgumentException">The user supplied an argument more than once and the argument type does not allow this. <see cref="Argument.OnCollision"/></exception>
+        /// <param name="args">Arguments to parse</param>
         public void Update(IList<string> args)
         {
             if (args == null)
@@ -60,7 +51,7 @@ namespace NMaier.GetOptNet
             while (e.MoveNext())
             {
                 string c = e.Current;
-                if ((opts.AcceptPrefix & ArgumentPrefixType.Dashes) != 0)
+                if ((opts.AcceptType & ArgumentPrefixType.Dashes) != 0)
                 {
                     if (regDashesDie.IsMatch(c))
                     {
@@ -70,10 +61,16 @@ namespace NMaier.GetOptNet
                     if (m.Success)
                     {
                         string arg = m.Groups[1].Value;
+                        if (opts.CaseType == ArgumentCaseType.Insensitive)
+                        {
+                            arg = arg.ToLower();
+                        }
+
                         string val = m.Groups[2].Value;
                         if (!longs.ContainsKey(arg))
                         {
-                            throw new UnknownAttributeException(String.Format("There is no attribute \"{0}\"", arg));
+                            handleUnknownArgument(arg, val);
+                            continue;
                         }
                         ArgumentHandler h = longs[arg];
                         if (!String.IsNullOrEmpty(val) && h.IsFlag)
@@ -84,7 +81,7 @@ namespace NMaier.GetOptNet
                         {
                             throw new InvalidValueException(String.Format("Omitted value for argument \"{0}\"", arg));
                         }
-                        UpdateHandler(h, val, arg);
+                        updateHandler(h, val, arg);
 
                         continue;
                     }
@@ -95,13 +92,16 @@ namespace NMaier.GetOptNet
                         char[] singles = arg.ToCharArray();
                         for (int i = 0, l = singles.Length; i < l; ++i)
                         {
-                            if (!shorts.ContainsKey(singles[i]))
+                            char currentArg = singles[i];
+                            if (!shorts.ContainsKey(currentArg))
                             {
-                                throw new UnknownAttributeException(String.Format("There is no attribute \"{0}\"", arg));
+                                handleUnknownArgument(new string(currentArg, 1), null);
+                                continue;
                             }
-                            ArgumentHandler h = shorts[singles[i]];
+                            ArgumentHandler h = shorts[currentArg];
                             if (!h.IsFlag)
                             {
+                                
                                 string val = null;
                                 // Consume rest of the string as argument
                                 if (i != l - 1)
@@ -116,18 +116,18 @@ namespace NMaier.GetOptNet
 
                                 if (String.IsNullOrEmpty(val))
                                 {
-                                    throw new InvalidValueException(String.Format("Omitted value for argument \"{0}\"", singles[i]));
+                                    throw new InvalidValueException(String.Format("Omitted value for argument \"{0}\"", currentArg));
                                 }
-                                UpdateHandler(h, val, new string(singles[i], 1));
+                                updateHandler(h, val, new string(currentArg, 1));
                                 break; // We consumed the rest
                             }
-                            UpdateHandler(h, null, new string(singles[i], 1));
+                            updateHandler(h, null, new string(currentArg, 1));
                             continue;
                         }
                         continue;
                     }
                 }
-                if ((opts.AcceptPrefix & ArgumentPrefixType.Slashes) != 0)
+                if ((opts.AcceptType & ArgumentPrefixType.Slashes) != 0)
                 {
                     Match m = regSlashes.Match(c);
                     if (m.Success)
@@ -140,7 +140,9 @@ namespace NMaier.GetOptNet
                             char a = arg[0];
                             if (!shorts.ContainsKey(a))
                             {
-                                throw new UnknownAttributeException(String.Format("There is no attribute \"{0}\"", arg));
+                                handleUnknownArgument(arg, val);
+                                continue;
+
                             }
                             h = shorts[a];
                             if (!String.IsNullOrEmpty(val) && h.IsFlag)
@@ -155,27 +157,84 @@ namespace NMaier.GetOptNet
                                     throw new InvalidValueException(String.Format("Omitted value for argument \"{0}\"", arg));
                                 }
                             }
-                            UpdateHandler(h, val, arg);
+                            updateHandler(h, val, arg);
                             continue;
+                        }
+                        if (opts.CaseType == ArgumentCaseType.Insensitive)
+                        {
+                            arg = arg.ToLower();
                         }
                         if (!longs.ContainsKey(arg))
                         {
-                            throw new UnknownAttributeException(String.Format("There is no attribute \"{0}\"", arg));
+                            handleUnknownArgument(arg, val);
+                            continue;
                         }
                         h = longs[arg];
                         if (String.IsNullOrEmpty(val) && !h.IsFlag)
                         {
                             throw new InvalidValueException(String.Format("Argument \"{0}\" does except a value", arg));
                         }
-                        UpdateHandler(h, val, arg);
+                        updateHandler(h, val, arg);
                         continue;
                     }
                 }
-                UpdateHandler(parameters, c, "<parameters>");
+                updateHandler(parameters, c, "<parameters>");
             }
             while (e.MoveNext())
             {
-                UpdateHandler(parameters, e.Current, "<parameters>");
+                updateHandler(parameters, e.Current, "<parameters>");
+            }
+        }
+
+        private void handleUnknownArgument(string arg, string val)
+        {
+            switch (opts.OnUnknownArgument)
+            {
+                case UnknownArgumentsAction.Throw:
+                    throw new UnknownAttributeException(String.Format("There is no argument with the name \"{0}\"", arg));
+
+                case UnknownArgumentsAction.PlaceInParameters:
+                    parameters.Assign(arg);
+                    if (!String.IsNullOrEmpty(val))
+                    {
+                        parameters.Assign(val);
+                    }
+                    break;
+            }
+        }
+        private void updateHandler(ArgumentHandler handler, string value, string arg)
+        {
+            try
+            {
+                handler.Assign(value);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new ProgrammingError(ex.Message);
+            }
+            catch (NotSupportedException ex)
+            {
+                throw new InvalidValueException(String.Format("Wrong value type for argument \"{0}\": {1}", arg, ex.Message));
+            }
+            catch (GetOptException ex)
+            {
+                throw ex;
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException is GetOptException)
+                {
+                    throw ex.InnerException;
+                }
+                if (ex.InnerException is NotSupportedException)
+                {
+                    throw new InvalidValueException(String.Format("Wrong value type for argument \"{0}\": {1}", arg, ex.Message));
+                }
+                throw new ProgrammingError(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new ProgrammingError(ex.Message);
             }
         }
     }
