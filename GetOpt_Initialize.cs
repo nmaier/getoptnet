@@ -108,26 +108,8 @@ namespace NMaier.GetOptNet
                         throw new ProgrammingError(String.Format("Duplicate argument {0}", name));
                     }
 
-                    PropertyInfo pi = info as PropertyInfo;
-                    FieldInfo fi = info as FieldInfo;
                     ArgumentHandler ai;
-                    Type memberType;
-                    if (pi != null)
-                    {
-                        if (!pi.CanWrite)
-                        {
-                            throw new ProgrammingError(String.Format("Property {0} is an argument but not assignable", info.Name));
-                        }
-                        memberType = pi.PropertyType;
-                    }
-                    else if (fi != null)
-                    {
-                        memberType = fi.FieldType;
-                    }
-                    else
-                    {
-                        throw new ProgrammingError("WTF?!");
-                    }
+                    Type memberType = getMemberType(info);
                     if (memberType.IsArray)
                     {
                         ai = new ArrayArgumentHandler(this, info, memberType);
@@ -184,6 +166,31 @@ namespace NMaier.GetOptNet
                     }
                 }
             }
+        }
+
+        private static Type getMemberType(MemberInfo info)
+        {
+            PropertyInfo pi = info as PropertyInfo;
+            FieldInfo fi = info as FieldInfo;
+
+            Type memberType;
+            if (pi != null)
+            {
+                if (!pi.CanWrite)
+                {
+                    throw new ProgrammingError(String.Format("Property {0} is an argument but not assignable", info.Name));
+                }
+                memberType = pi.PropertyType;
+            }
+            else if (fi != null)
+            {
+                memberType = fi.FieldType;
+            }
+            else
+            {
+                throw new ProgrammingError("WTF?!");
+            }
+            return memberType;
         }
     }
 }

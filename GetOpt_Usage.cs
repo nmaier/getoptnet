@@ -25,9 +25,112 @@
 
 using System;
 using System.Text;
+using System.Reflection;
+using System.Collections.Generic;
 
 namespace NMaier.GetOptNet
 {
+    sealed internal class OptInfo : IComparable<OptInfo>
+    {
+        private string name;
+
+        public string Name
+        {
+            get { return name; }
+        }
+
+        private bool flag = false;
+
+        public bool IsFlag
+        {
+            get { return flag; }
+        }
+
+        private string helptext = "";
+
+        public string Helptext
+        {
+            get { return helptext; }
+        }
+
+        private string helpvar = "";
+
+        public string Helpvar
+        {
+            get { return helpvar; }
+        }
+
+        private string argtext = "";
+
+        private ArgumentPrefixType prefix;
+
+        public string Argtext
+        {
+            get
+            {
+                if (String.IsNullOrEmpty(argtext))
+                {
+                    StringBuilder arg = new StringBuilder("   ");
+
+                    foreach (string a in shorts)
+                    {
+                        arg.Append(prefix == ArgumentPrefixType.Dashes ? "-" : "/");
+                        if (flag)
+                        {
+                            arg.AppendFormat("{0}, ", a, helpvar);
+                        }
+                        else
+                        {
+                            arg.AppendFormat("{0} {1}, ", a, helpvar);
+                        }
+                    }
+                    foreach (string a in longs)
+                    {
+                        arg.Append(prefix == ArgumentPrefixType.Dashes ? "--" : "/");
+                        if (flag)
+                        {
+                            arg.AppendFormat("{0}, ", a);
+                        }
+                        else
+                        {
+                            arg.AppendFormat("{0}={1}, ", a, helpvar);
+                        }
+                    }
+                    arg.Remove(arg.Length - 2, 2);
+                    argtext = arg.ToString();
+                }
+                return argtext;
+            }
+        }
+
+        List<string> shorts = new List<string>();
+
+        public List<string> Shorts
+        {
+            get { return shorts; }
+        }
+
+        List<string> longs = new List<string>();
+
+        public List<string> Longs
+        {
+            get { return longs; }
+        }
+
+        public OptInfo(string aName, bool aFlag, string aHelptext, string aHelpvar, ArgumentPrefixType aPrefix)
+        {
+            name = aName;
+            flag = aFlag;
+            helptext = aHelptext;
+            helpvar = aHelpvar;
+            prefix = aPrefix;
+        }
+
+        public int CompareTo(OptInfo other)
+        {
+            return name.CompareTo(other.name);
+        }
+    }
     abstract public partial class GetOpt
     {
         public void PrintUsage()
@@ -48,15 +151,117 @@ namespace NMaier.GetOptNet
         }
         public string AssembleUsage(int width)
         {
+            Type me = GetType();
             string nl = Environment.NewLine;
-            StringBuilder s = new StringBuilder();
+            BindingFlags flags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance;
 
-            s.Append("Usage:");
-            s.Append(nl);
+            StringBuilder rv = new StringBuilder();
+
+            if (!String.IsNullOrEmpty(opts.UsageIntro))
+            {
+                rv.Append(opts.UsageIntro);
+                rv.Append(nl);
+                rv.Append(nl);
+            }
+
+            List<OptInfo> options = new List<OptInfo>();
 
 
-            s.Append(nl);
-            return s.ToString();
+            foreach (MemberInfo[] infoArray in new MemberInfo[][] { me.GetFields(flags), me.GetProperties(flags) })
+            {
+                foreach (MemberInfo info in infoArray)
+                {
+                    string name;
+                    ShortArgument[] sa = info.GetCustomAttributes(typeof(ShortArgument), true) as ShortArgument[];
+                    Argument[] la = info.GetCustomAttributes(typeof(Argument), true) as Argument[];
+                    if (la.Length == 0)
+                    {
+                        continue;
+                    }
+                    string longName = String.IsNullOrEmpty(la[0].GetArg()) ? info.Name : la[0].GetArg();
+                    if (sa.Length != 0)
+                    {
+                        name = new string(sa[0].GetArg(), 1);
+                    }
+                    else
+                    {
+                        name = longName;
+                    }
+                    Type memberType = getMemberType(info);
+
+                    string hv = la[0].Helpvar;
+                    if (String.IsNullOrEmpty(hv))
+                    {
+                        hv = longs[longName].ElementType.Name;
+                    }
+
+                    OptInfo oi = new OptInfo(name, longs[longName].IsFlag, la[0].Helptext, hv.ToUpper(), opts.UsagePrefix);
+                    oi.Longs.Add(longName);
+                    if (sa.Length != 0)
+                    {
+                        oi.Shorts.Add(new string(sa[0].GetArg(), 1));
+                    }
+                    if (opts.UsageShowAliases == UsageAliasShowOption.SHOW)
+                    {
+                        foreach (ArgumentAlias alias in info.GetCustomAttributes(typeof(ArgumentAlias), true))
+                        {
+                            oi.Longs.Add(alias.GetAlias());
+                        }
+                        foreach (ShortArgumentAlias alias in info.GetCustomAttributes(typeof(ShortArgumentAlias), true))
+                        {
+                            oi.Shorts.Add(new string(alias.GetAlias(), 1));
+                        }
+                    }
+                    options.Add(oi);
+                }
+            }
+
+            options.Sort();
+
+            int maxLine = width * 3 / 5;
+            int maxArg = width / 4;
+
+            foreach (OptInfo o in options)
+            {
+                int len = o.Argtext.Length + 3;
+                if (len <= maxLine) {
+                    maxArg = Math.Max(maxArg, len);
+                }
+            }
+            
+            foreach (OptInfo o in options) {
+                rv.Append(o.Argtext);
+                int len = o.Argtext.Length;
+                if (len > maxLine) {
+                    rv.Append(nl);
+                    len = 0;
+                }
+                rv.Append(new string(' ', maxArg - len));
+
+                len = width - maxArg;
+
+                Queue<string> words = new Queue<string>(o.Helptext.Split(new char[] { ' ', '\t' }));
+                while (words.Count != 0)
+                {
+                    string w = words.Dequeue() + " ";
+                    if (len < w.Length)
+                    {
+                        rv.Append(nl);
+                        rv.Append(new string(' ', maxArg));
+                        len = width - maxArg;
+                    }
+                    rv.Append(w);
+                    len -= w.Length;
+                }
+                rv.Append(nl);
+            }
+            if (!String.IsNullOrEmpty(opts.UsageEpilog))
+            {
+                rv.Append(nl);
+                rv.Append(opts.UsageEpilog);
+            }
+            rv.Append(nl);
+            return rv.ToString();
         }
     }
 }

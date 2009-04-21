@@ -108,7 +108,7 @@ namespace NMaier.GetOptNet
         THROW
     }
 
-    public enum AliasShowOption
+    public enum UsageAliasShowOption
     {
         SHOW,
         HIDE
@@ -118,8 +118,12 @@ namespace NMaier.GetOptNet
     public class GetOptOptions : Attribute
     {
         private ArgumentPrefixType apt = ArgumentPrefixType.Both;
+        private ArgumentPrefixType upt = ArgumentPrefixType.Dashes;
         private UnknownArgumentsAction uaa = UnknownArgumentsAction.IGNORE;
-        private AliasShowOption aso = AliasShowOption.HIDE;
+        private UsageAliasShowOption aso = UsageAliasShowOption.HIDE;
+
+        private string usageIntro = "Usage:";
+        private string usageEpilog = "";
 
         public GetOptOptions() { }
         public ArgumentPrefixType AcceptPrefix
@@ -132,10 +136,33 @@ namespace NMaier.GetOptNet
             get { return uaa; }
             set { uaa = value; }
         }
-        public AliasShowOption ShowAliasesInUsage
+        public UsageAliasShowOption UsageShowAliases
         {
             get { return aso; }
             set { aso = value; }
+        }
+        public ArgumentPrefixType UsagePrefix
+        {
+            get { return upt; }
+            set
+            {
+                if (value != ArgumentPrefixType.Dashes && value != ArgumentPrefixType.Slashes)
+                {
+                    throw new ProgrammingError("UsagePrefix must be Dashes or Slashes");
+                }
+                upt = value;
+            }
+        }
+
+        public string UsageIntro
+        {
+            get { return usageIntro; }
+            set { usageIntro = value; }
+        }
+        public string UsageEpilog
+        {
+            get { return usageEpilog; }
+            set { usageEpilog = value; }
         }
     }
 }

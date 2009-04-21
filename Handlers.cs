@@ -34,12 +34,14 @@ namespace NMaier.GetOptNet
     {
         protected object obj;
         protected MemberInfo info;
-        protected Type type;
+        protected Type type, elementType;
+
         protected TypeConverter converter;
         private bool isflag;
 
         public bool IsFlag { get { return isflag; } }
         public string Name { get { return info.Name; } }
+        public Type ElementType { get { return elementType; } }
 
         public ArgumentHandler(object aObj, MemberInfo aInfo, Type aType, bool aIsFlag)
         {
@@ -47,6 +49,7 @@ namespace NMaier.GetOptNet
             obj = aObj;
             info = aInfo;
             type = aType;
+            elementType = type;
         }
 
         protected object InternalConvert(string from)
@@ -180,8 +183,9 @@ namespace NMaier.GetOptNet
         public ArrayArgumentHandler(Object aObj, MemberInfo aInfo, Type aType)
             : base(aObj, aInfo, aType, false)
         {
-            converter = TypeDescriptor.GetConverter(type.GetElementType());
-            listType = typeof(List<>).MakeGenericType(new Type[] { type.GetElementType() });
+            elementType = type.GetElementType();
+            converter = TypeDescriptor.GetConverter(elementType);
+            listType = typeof(List<>).MakeGenericType(new Type[] { elementType });
             list = listType.GetConstructor(new Type[] { }).Invoke(null);
         }
         public override void Assign(string toAssign)
@@ -213,7 +217,8 @@ namespace NMaier.GetOptNet
                 default:
                     throw new ProgrammingError("W00t?");
             }
-            converter = TypeDescriptor.GetConverter(aType.GetGenericArguments()[0]);
+            elementType = aType.GetGenericArguments()[0];
+            converter = TypeDescriptor.GetConverter(elementType);
         }
 
         public override void Assign(string toAssign)
