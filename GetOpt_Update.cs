@@ -51,7 +51,7 @@ namespace NMaier.GetOptNet
             while (e.MoveNext())
             {
                 string c = e.Current;
-                if ((opts.AcceptType & ArgumentPrefixType.Dashes) != 0)
+                if ((opts.AcceptPrefixType & ArgumentPrefixType.Dashes) != 0)
                 {
                     if (regDashesDie.IsMatch(c))
                     {
@@ -127,7 +127,7 @@ namespace NMaier.GetOptNet
                         continue;
                     }
                 }
-                if ((opts.AcceptType & ArgumentPrefixType.Slashes) != 0)
+                if ((opts.AcceptPrefixType & ArgumentPrefixType.Slashes) != 0)
                 {
                     Match m = regSlashes.Match(c);
                     if (m.Success)

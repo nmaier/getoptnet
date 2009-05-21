@@ -93,7 +93,7 @@ namespace NMaier.GetOptNet
                     {
                         continue;
                     }
-                    if (opts.AcceptType == ArgumentPrefixType.None)
+                    if (opts.AcceptPrefixType == ArgumentPrefixType.None)
                     {
                         throw new ProgrammingError("You used Prefix=None, hence there are no arguments allowed!");
                     }

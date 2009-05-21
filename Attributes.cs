@@ -311,7 +311,7 @@ namespace NMaier.GetOptNet
         private UnknownArgumentsAction uaa = UnknownArgumentsAction.Throw;
         private UsageAliasShowOption aso = UsageAliasShowOption.Omit;
 
-        private string usageIntro = "Usage:";
+        private string usageIntro = "";
         private string usageEpilog = "";
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace NMaier.GetOptNet
         /// <summary>
         /// Defines which argument type to accept
         /// </summary>
-        public ArgumentPrefixType AcceptType
+        public ArgumentPrefixType AcceptPrefixType
         {
             get { return apt; }
             set { apt = value; }

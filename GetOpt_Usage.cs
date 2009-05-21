@@ -27,6 +27,7 @@ using System;
 using System.Text;
 using System.Reflection;
 using System.Collections.Generic;
+using System.IO;
 
 namespace NMaier.GetOptNet
 {
@@ -44,6 +45,12 @@ namespace NMaier.GetOptNet
         public bool IsFlag
         {
             get { return flag; }
+        }
+
+        private bool acceptsMultiple = false;
+        public bool AcceptsMultiple
+        {
+            get { return acceptsMultiple; }
         }
 
         private string helptext = "";
@@ -96,6 +103,10 @@ namespace NMaier.GetOptNet
                             arg.AppendFormat("{0}={1}, ", a, helpvar);
                         }
                     }
+                    if (acceptsMultiple)
+                    {
+                        arg.Append("..., ");
+                    }
                     arg.Remove(arg.Length - 2, 2);
                     argtext = arg.ToString();
                 }
@@ -117,7 +128,7 @@ namespace NMaier.GetOptNet
             get { return longs; }
         }
 
-        public OptInfo(string aName, bool aFlag, string aHelptext, string aHelpvar, ArgumentPrefixType aPrefix)
+        public OptInfo(string aName, bool aFlag, bool aAcceptsMultiple, string aHelptext, string aHelpvar, ArgumentPrefixType aPrefix)
         {
             name = aName;
             flag = aFlag;
@@ -170,9 +181,13 @@ namespace NMaier.GetOptNet
             if (!String.IsNullOrEmpty(opts.UsageIntro))
             {
                 rv.Append(opts.UsageIntro);
-                rv.Append(nl);
-                rv.Append(nl);
             }
+            else
+            {
+                rv.AppendFormat("Usage: {0} [OPTION] [...] parameters ...", new FileInfo(Assembly.GetEntryAssembly().Location).Name);
+            }
+            rv.Append(nl);
+            rv.Append(nl);
 
             List<OptInfo> options = new List<OptInfo>();
 
@@ -209,8 +224,11 @@ namespace NMaier.GetOptNet
                         hv = longs[longName].ElementType.Name;
                     }
 
-                    OptInfo oi = new OptInfo(name, longs[longName].IsFlag, la[0].Helptext, hv.ToUpper(), opts.UsagePrefix);
+                    Argument arg = la[0];
+                    ArgumentHandler handler = longs[longName];
+                    OptInfo oi = new OptInfo(name, handler.IsFlag, handler.AcceptsMultiple, arg.Helptext, hv.ToUpper(), opts.UsagePrefix);
                     oi.Longs.Add(longName);
+                    
                     if (sa.Length != 0)
                     {
                         oi.Shorts.Add(new string(sa[0].GetArg(), 1));

@@ -38,18 +38,21 @@ namespace NMaier.GetOptNet
 
         protected TypeConverter converter;
         private bool isflag;
+        private bool acceptsMultiple;
 
         public bool IsFlag { get { return isflag; } }
+        public bool AcceptsMultiple { get { return acceptsMultiple; } }
         public string Name { get { return info.Name; } }
         public Type ElementType { get { return elementType; } }
 
-        public ArgumentHandler(object aObj, MemberInfo aInfo, Type aType, bool aIsFlag)
+        public ArgumentHandler(object aObj, MemberInfo aInfo, Type aType, bool aIsFlag, bool aAcceptsMultiple)
         {
             isflag = aIsFlag;
             obj = aObj;
             info = aInfo;
             type = aType;
             elementType = type;
+            acceptsMultiple = aAcceptsMultiple;
         }
 
         protected object InternalConvert(string from)
@@ -93,7 +96,7 @@ namespace NMaier.GetOptNet
         private ArgumentCollision collision;
 
         public PlainArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, ArgumentCollision aCollision)
-            : base(aObj, aInfo, aType, false)
+            : base(aObj, aInfo, aType, false, false)
         {
             collision = aCollision;
             converter = TypeDescriptor.GetConverter(type);
@@ -129,7 +132,7 @@ namespace NMaier.GetOptNet
         private ArgumentCollision collision;
 
         public FlagArgumentHandler(Object aObj, MemberInfo aInfo, ArgumentCollision aCollision)
-            : base(aObj, aInfo, typeof(bool), true)
+            : base(aObj, aInfo, typeof(bool), true, false)
         {
             collision = aCollision;
             converter = TypeDescriptor.GetConverter(type);
@@ -162,7 +165,7 @@ namespace NMaier.GetOptNet
     {
         Int64 current = 0;
         public CounterArgumentHandler(Object aObj, MemberInfo aInfo, Type aType)
-            : base(aObj, aInfo, aType, true)
+            : base(aObj, aInfo, aType, true, true)
         {
         }
         public override void Assign(string toAssign)
@@ -181,7 +184,7 @@ namespace NMaier.GetOptNet
         private Type listType;
         private object list;
         public ArrayArgumentHandler(Object aObj, MemberInfo aInfo, Type aType)
-            : base(aObj, aInfo, aType, false)
+            : base(aObj, aInfo, aType, false, true)
         {
             elementType = type.GetElementType();
             converter = TypeDescriptor.GetConverter(elementType);
@@ -204,7 +207,7 @@ namespace NMaier.GetOptNet
     {
         private object list;
         public IListArgumentHandler(Object aObj, MemberInfo aInfo, Type aType)
-            : base(aObj, aInfo, aType, false)
+            : base(aObj, aInfo, aType, false, true)
         {
             switch (info.MemberType)
             {
