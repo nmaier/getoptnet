@@ -39,13 +39,14 @@ namespace NMaier.GetOptNet
         protected TypeConverter converter;
         private bool isflag;
         private bool acceptsMultiple;
+        private bool required = false;
 
         public bool IsFlag { get { return isflag; } }
         public bool AcceptsMultiple { get { return acceptsMultiple; } }
         public string Name { get { return info.Name; } }
         public Type ElementType { get { return elementType; } }
 
-        public ArgumentHandler(object aObj, MemberInfo aInfo, Type aType, bool aIsFlag, bool aAcceptsMultiple)
+        public ArgumentHandler(object aObj, MemberInfo aInfo, Type aType, bool aIsFlag, bool aAcceptsMultiple, bool aRequired)
         {
             isflag = aIsFlag;
             obj = aObj;
@@ -53,6 +54,7 @@ namespace NMaier.GetOptNet
             type = aType;
             elementType = type;
             acceptsMultiple = aAcceptsMultiple;
+            required = aRequired;
         }
 
         protected object InternalConvert(string from)
@@ -95,8 +97,8 @@ namespace NMaier.GetOptNet
         private bool wasSet = false;
         private ArgumentCollision collision;
 
-        public PlainArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, ArgumentCollision aCollision)
-            : base(aObj, aInfo, aType, false, false)
+        public PlainArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, ArgumentCollision aCollision, bool aRequired)
+            : base(aObj, aInfo, aType, false, false, aRequired)
         {
             collision = aCollision;
             converter = TypeDescriptor.GetConverter(type);
@@ -129,13 +131,15 @@ namespace NMaier.GetOptNet
     sealed internal class FlagArgumentHandler : ArgumentHandler
     {
         private bool wasSet = false;
+        private bool whenSet = true;
         private ArgumentCollision collision;
 
-        public FlagArgumentHandler(Object aObj, MemberInfo aInfo, ArgumentCollision aCollision)
-            : base(aObj, aInfo, typeof(bool), true, false)
+        public FlagArgumentHandler(Object aObj, MemberInfo aInfo, ArgumentCollision aCollision, bool aRequired, Boolean aWhenSet)
+            : base(aObj, aInfo, typeof(bool), true, false, aRequired)
         {
             collision = aCollision;
             converter = TypeDescriptor.GetConverter(type);
+            whenSet = aWhenSet;
         }
         public override void Assign(string toAssign)
         {
@@ -152,7 +156,7 @@ namespace NMaier.GetOptNet
                 }
             }
             wasSet = true;
-            InternalAssign(true);
+            InternalAssign(whenSet);
         }
 
         public override void Finish()
@@ -164,8 +168,8 @@ namespace NMaier.GetOptNet
     sealed internal class CounterArgumentHandler : ArgumentHandler
     {
         Int64 current = 0;
-        public CounterArgumentHandler(Object aObj, MemberInfo aInfo, Type aType)
-            : base(aObj, aInfo, aType, true, true)
+        public CounterArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, bool aRequired)
+            : base(aObj, aInfo, aType, true, true, aRequired)
         {
         }
         public override void Assign(string toAssign)
@@ -183,8 +187,8 @@ namespace NMaier.GetOptNet
     {
         private Type listType;
         private object list;
-        public ArrayArgumentHandler(Object aObj, MemberInfo aInfo, Type aType)
-            : base(aObj, aInfo, aType, false, true)
+        public ArrayArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, bool aRequired)
+            : base(aObj, aInfo, aType, false, true, aRequired)
         {
             elementType = type.GetElementType();
             converter = TypeDescriptor.GetConverter(elementType);
@@ -206,8 +210,8 @@ namespace NMaier.GetOptNet
     sealed internal class IListArgumentHandler : ArgumentHandler
     {
         private object list;
-        public IListArgumentHandler(Object aObj, MemberInfo aInfo, Type aType)
-            : base(aObj, aInfo, aType, false, true)
+        public IListArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, bool aRequired)
+            : base(aObj, aInfo, aType, false, true, aRequired)
         {
             switch (info.MemberType)
             {

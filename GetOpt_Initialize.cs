@@ -75,11 +75,11 @@ namespace NMaier.GetOptNet
                         }
                         if (field.FieldType.IsArray)
                         {
-                            parameters = new ArrayArgumentHandler(this, field, field.FieldType);
+                            parameters = new ArrayArgumentHandler(this, field, field.FieldType, false);
                         }
                         else if (isIList(field.FieldType))
                         {
-                            parameters = new IListArgumentHandler(this, field, field.FieldType);
+                            parameters = new IListArgumentHandler(this, field, field.FieldType, false);
                         }
                         else
                         {
@@ -116,25 +116,26 @@ namespace NMaier.GetOptNet
                     Type memberType = getMemberType(info);
                     if (memberType.IsArray)
                     {
-                        ai = new ArrayArgumentHandler(this, info, memberType);
+                        ai = new ArrayArgumentHandler(this, info, memberType, arg.Required);
                     }
                     else if (isIList(memberType))
                     {
-                        ai = new IListArgumentHandler(this, info, memberType);
+                        ai = new IListArgumentHandler(this, info, memberType, arg.Required);
                     }
                     else
                     {
                         if (memberType == typeof(bool) || memberType == typeof(Boolean) || memberType.IsSubclassOf(typeof(Boolean)))
                         {
-                            ai = new FlagArgumentHandler(this, info, arg.OnCollision);
+                            FlagArgument[] bargs = info.GetCustomAttributes(typeof(FlagArgument), true) as FlagArgument[];
+                            ai = new FlagArgumentHandler(this, info, arg.OnCollision, arg.Required, bargs.Length != 0 ? bargs[0].GetWhenSet() : true);
                         }
                         else if (info.GetCustomAttributes(typeof(Counted), true).Length != 0)
                         {
-                            ai = new CounterArgumentHandler(this, info, memberType);
+                            ai = new CounterArgumentHandler(this, info, memberType, arg.Required);
                         }
                         else
                         {
-                            ai = new PlainArgumentHandler(this, info, memberType, arg.OnCollision);
+                            ai = new PlainArgumentHandler(this, info, memberType, arg.OnCollision, arg.Required);
                         }
                     }
 

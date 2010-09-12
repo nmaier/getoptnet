@@ -59,6 +59,7 @@ namespace NMaier.GetOptNet
         private string helptext = "";
         private string helpvar = "";
         private ArgumentCollision collision = ArgumentCollision.Ignore;
+        private bool required = false;
 
         /// <summary>
         /// Default constructor. Will use the member's name as argument name
@@ -112,6 +113,13 @@ namespace NMaier.GetOptNet
         {
             get { return collision; }
             set { collision = value; }
+        }
+
+
+        public bool Required
+        {
+            get { return required; }
+            set { required = value; }
         }
     }
 
@@ -198,6 +206,18 @@ namespace NMaier.GetOptNet
         /// </summary>
         /// <returns>Alias</returns>
         public char GetAlias() { return alias; }
+    }
+
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
+    public class FlagArgument : Attribute
+    {
+        private bool whenset = false;
+        public FlagArgument(bool aWhenSet)
+        {
+            whenset = aWhenSet;
+        }
+
+        public bool GetWhenSet() { return whenset; }
     }
 
     /// <summary>
