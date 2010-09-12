@@ -88,4 +88,17 @@ namespace NMaier.GetOptNet
         /// <param name="Message">Message associated with the exception</param>
         public DuplicateArgumentException(string Message) : base(Message) { }
     }
+
+    /// <summary>
+    /// Thrown when a required argument is missing
+    /// </summary>
+    public class RequiredOptionMissingException : GetOptException
+    {
+        /// <summary>
+        /// Constructs a RequiredOptionMissingException exception
+        /// </summary>
+        /// <param name="Message">Message associated with the exception</param>
+        public RequiredOptionMissingException(string Message) : base(Message) { }
+        internal RequiredOptionMissingException(ArgumentHandler aOption) : this(String.Format("Required option {0} wasn't specified", aOption.Name)) { }
+    }
 }

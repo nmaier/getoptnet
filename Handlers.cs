@@ -95,7 +95,7 @@ namespace NMaier.GetOptNet
         {
             if (required && !wasSet)
             {
-                throw new GetOptException(String.Format("Required parameter {0} wasn't specified", Name));
+                throw new RequiredOptionMissingException(this);
             }
             wasSet = false;
         }

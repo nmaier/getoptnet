@@ -115,7 +115,9 @@ namespace NMaier.GetOptNet
             set { collision = value; }
         }
 
-
+        /// <summary>
+        /// Defines if the argument in question is required and hence cannot be omitted
+        /// </summary>
         public bool Required
         {
             get { return required; }
@@ -208,15 +210,27 @@ namespace NMaier.GetOptNet
         public char GetAlias() { return alias; }
     }
 
+    /// <summary>
+    /// Defines a flag (boolean) argument
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
     public class FlagArgument : Attribute
     {
         private bool whenset = false;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="aWhenSet">Value that will be used when set</param>
         public FlagArgument(bool aWhenSet)
         {
             whenset = aWhenSet;
         }
 
+        /// <summary>
+        /// Returns assigned value that will be used when set
+        /// </summary>
+        /// <returns></returns>
         public bool GetWhenSet() { return whenset; }
     }
 
