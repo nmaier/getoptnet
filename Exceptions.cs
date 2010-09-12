@@ -99,6 +99,6 @@ namespace NMaier.GetOptNet
         /// </summary>
         /// <param name="Message">Message associated with the exception</param>
         public RequiredOptionMissingException(string Message) : base(Message) { }
-        internal RequiredOptionMissingException(ArgumentHandler aOption) : this(String.Format("Required option {0} wasn't specified", aOption.Name)) { }
+        internal RequiredOptionMissingException(ArgumentHandler aOption) : this(String.Format("Required option {0} wasn't specified", aOption.Name.ToUpper())) { }
     }
 }
