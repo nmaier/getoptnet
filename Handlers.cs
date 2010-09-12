@@ -36,7 +36,6 @@ namespace NMaier.GetOptNet
         protected MemberInfo info;
         protected Type type, elementType;
 
-        protected TypeConverter converter;
         protected bool wasSet = false;
         private bool isflag;
         private bool acceptsMultiple;
@@ -57,16 +56,26 @@ namespace NMaier.GetOptNet
             acceptsMultiple = aAcceptsMultiple;
             required = aRequired;
         }
-
         protected object InternalConvert(string from)
+        {
+            return InternalConvert(from, type);
+        }
+        protected object InternalConvert(string from, Type type)
         {
             try
             {
-                return converter.ConvertFromString(from);
+                return TypeDescriptor.GetConverter(type).ConvertFromString(from);
             }
             catch (Exception ex)
             {
-                throw new NotSupportedException(ex.Message);
+                try
+                {
+                    return type.GetConstructor(new Type[] { from.GetType() }).Invoke(new object[] { from });
+                }
+                catch (Exception)
+                {
+                    throw new NotSupportedException(ex.Message);
+                }
             }
         }
 
@@ -99,6 +108,20 @@ namespace NMaier.GetOptNet
             }
             wasSet = false;
         }
+        protected bool CheckCollision(ArgumentCollision aCollision)
+        {
+            if (wasSet)
+            {
+                switch (aCollision)
+                {
+                    case ArgumentCollision.Throw:
+                        throw new DuplicateArgumentException(String.Format("Option {0} is specified more than once", Name));
+                    case ArgumentCollision.Ignore:
+                        return false;
+                }
+            }
+            return true;
+        }
     }
 
     sealed internal class PlainArgumentHandler : ArgumentHandler
@@ -109,24 +132,14 @@ namespace NMaier.GetOptNet
             : base(aObj, aInfo, aType, false, false, aRequired)
         {
             collision = aCollision;
-            converter = TypeDescriptor.GetConverter(type);
         }
 
         public override void Assign(string toAssign)
         {
-            if (wasSet)
+            if (CheckCollision(collision))
             {
-                switch (collision)
-                {
-                    case ArgumentCollision.Throw:
-                        throw new DuplicateArgumentException(String.Format("Argument {0} is specified more than once", Name));
-                    case ArgumentCollision.Ignore:
-                        return;
-                    default:
-                        break;
-                }
+                InternalAssign(InternalConvert(toAssign));
             }
-            InternalAssign(InternalConvert(toAssign));
         }
     }
 
@@ -139,24 +152,14 @@ namespace NMaier.GetOptNet
             : base(aObj, aInfo, typeof(bool), true, false, aRequired)
         {
             collision = aCollision;
-            converter = TypeDescriptor.GetConverter(type);
             whenSet = aWhenSet;
         }
         public override void Assign(string toAssign)
         {
-            if (wasSet)
+            if (CheckCollision(collision))
             {
-                switch (collision)
-                {
-                    case ArgumentCollision.Throw:
-                        throw new DuplicateArgumentException(String.Format("Argument {0} is specified more than once", Name));
-                    case ArgumentCollision.Ignore:
-                        return;
-                    default:
-                        break;
-                }
+                InternalAssign(InternalConvert(toAssign));
             }
-            InternalAssign(whenSet);
         }
     }
 
@@ -187,13 +190,12 @@ namespace NMaier.GetOptNet
             : base(aObj, aInfo, aType, false, true, aRequired)
         {
             elementType = type.GetElementType();
-            converter = TypeDescriptor.GetConverter(elementType);
             listType = typeof(List<>).MakeGenericType(new Type[] { elementType });
             list = listType.GetConstructor(new Type[] { }).Invoke(null);
         }
         public override void Assign(string toAssign)
         {
-            listType.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign) });
+            listType.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign, elementType) });
         }
         public override void Finish()
         {
@@ -222,12 +224,11 @@ namespace NMaier.GetOptNet
                     throw new ProgrammingError("W00t?");
             }
             elementType = aType.GetGenericArguments()[0];
-            converter = TypeDescriptor.GetConverter(elementType);
         }
 
         public override void Assign(string toAssign)
         {
-            type.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign) });
+            type.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign, elementType) });
             wasSet = true;
         }
     }
