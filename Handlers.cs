@@ -81,20 +81,27 @@ namespace NMaier.GetOptNet
 
         protected void InternalAssign(object toAssign)
         {
-            switch (info.MemberType)
+            try
             {
-                case MemberTypes.Field:
-                    FieldInfo fi = info as FieldInfo;
-                    fi.SetValue(obj, toAssign);
-                    break;
+                switch (info.MemberType)
+                {
+                    case MemberTypes.Field:
+                        FieldInfo fi = info as FieldInfo;
+                        fi.SetValue(obj, toAssign);
+                        break;
 
-                case MemberTypes.Property:
-                    PropertyInfo pi = info as PropertyInfo;
-                    pi.SetValue(obj, toAssign, null);
-                    break;
+                    case MemberTypes.Property:
+                        PropertyInfo pi = info as PropertyInfo;
+                        pi.SetValue(obj, toAssign, null);
+                        break;
 
-                default:
-                    throw new ProgrammingError("w00t?");
+                    default:
+                        throw new ProgrammingError("w00t?");
+                }
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
             }
             wasSet = true;
         }
@@ -182,12 +189,41 @@ namespace NMaier.GetOptNet
         }
     }
 
-    sealed internal class ArrayArgumentHandler : ArgumentHandler
+    internal abstract class MultipleArgumentHandler : ArgumentHandler
+    {
+        protected uint min;
+        protected uint max;
+        protected uint added = 0;
+        public MultipleArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, uint aMin, uint aMax)
+            : base(aObj, aInfo, aType, false, true, aMin > 0)
+        {
+            min = aMin;
+            max = aMax;
+        }
+        public override void Finish()
+        {
+            if (added < min)
+            {
+                throw new MultipleArgumentCountException(String.Format("Not enough arguments supplied for {0}", Name.ToUpper()));
+            }
+            base.Finish();
+        }
+
+        protected void CheckAssign()
+        {
+            if (max > 0 && added == max)
+            {
+                throw new MultipleArgumentCountException(String.Format("Too many arguments supplied for {0}", Name.ToUpper()));
+            }
+        }
+    }
+
+    sealed internal class ArrayArgumentHandler : MultipleArgumentHandler
     {
         private Type listType;
         private object list;
-        public ArrayArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, bool aRequired)
-            : base(aObj, aInfo, aType, false, true, aRequired)
+        public ArrayArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, uint aMin, uint aMax)
+            : base(aObj, aInfo, aType, aMin, aMax)
         {
             elementType = type.GetElementType();
             listType = typeof(List<>).MakeGenericType(new Type[] { elementType });
@@ -195,7 +231,9 @@ namespace NMaier.GetOptNet
         }
         public override void Assign(string toAssign)
         {
+            CheckAssign();
             listType.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign, elementType) });
+            added++;
         }
         public override void Finish()
         {
@@ -206,11 +244,11 @@ namespace NMaier.GetOptNet
 
     }
 
-    sealed internal class IListArgumentHandler : ArgumentHandler
+    sealed internal class IListArgumentHandler : MultipleArgumentHandler
     {
         private object list;
-        public IListArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, bool aRequired)
-            : base(aObj, aInfo, aType, false, true, aRequired)
+        public IListArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, uint aMin, uint aMax)
+            : base(aObj, aInfo, aType, aMin, aMax)
         {
             switch (info.MemberType)
             {
@@ -228,8 +266,9 @@ namespace NMaier.GetOptNet
 
         public override void Assign(string toAssign)
         {
+            CheckAssign();
             type.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign, elementType) });
-            wasSet = true;
+            added++;
         }
     }
 }

@@ -240,11 +240,45 @@ namespace NMaier.GetOptNet
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
     public class Counted : Attribute { }
 
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
+    public class MultipleArguments : Attribute
+    {
+        private uint min = 0;
+        private uint max = 0;
+
+        public uint Min
+        {
+            get { return min; }
+            set { min = value; }
+        }
+        public uint Max
+        {
+            get { return max; }
+            set { max = value; }
+        }
+
+        public uint Exact
+        {
+            get
+            {
+                return max;
+            }
+            set
+            {
+                if (value == 0)
+                {
+                    throw new ProgrammingError("Exact has to be > 0");
+                }
+                min = max = value;
+            }
+        }
+    }
+
     /// <summary>
     /// Specifies the destination of any non-argument strings (aka. parameters) the user supplies.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
-    public class Parameters : Attribute { }
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
+    public class Parameters : MultipleArguments {}
 
 
     /// <summary>

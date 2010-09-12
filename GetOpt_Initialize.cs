@@ -62,24 +62,21 @@ namespace NMaier.GetOptNet
             {
                 foreach (MemberInfo info in infoArray)
                 {
-                    if (info.GetCustomAttributes(typeof(Parameters), true).Length == 1)
+                    Parameters[] paramArgs = info.GetCustomAttributes(typeof(Parameters), true) as Parameters[];
+                    if (paramArgs.Length == 1)
                     {
-                        if (parameters != null || info.MemberType != MemberTypes.Field)
+                        if (parameters != null || (info.MemberType != MemberTypes.Field && info.MemberType != MemberTypes.Property))
                         {
                             throw new ProgrammingError("Duplicate declaration for parameters");
                         }
-                        FieldInfo field = info as FieldInfo;
-                        if (field == null)
+                        Type type = getMemberType(info);
+                        if (type.IsArray)
                         {
-                            throw new ProgrammingError("W00T?");
+                            parameters = new ArrayArgumentHandler(this, info, type, paramArgs[0].Min, paramArgs[0].Max);
                         }
-                        if (field.FieldType.IsArray)
+                        else if (isIList(type))
                         {
-                            parameters = new ArrayArgumentHandler(this, field, field.FieldType, false);
-                        }
-                        else if (isIList(field.FieldType))
-                        {
-                            parameters = new IListArgumentHandler(this, field, field.FieldType, false);
+                            parameters = new IListArgumentHandler(this, info, type, paramArgs[0].Min, paramArgs[0].Max);
                         }
                         else
                         {
@@ -114,13 +111,20 @@ namespace NMaier.GetOptNet
 
                     ArgumentHandler ai;
                     Type memberType = getMemberType(info);
+                    uint min = 0, max = 0;
+                    MultipleArguments[] margs = info.GetCustomAttributes(typeof(MultipleArguments), true) as MultipleArguments[];
+                    if (margs.Length == 1)
+                    {
+                        min = margs[0].Min;
+                        max = margs[0].Max;
+                    }
                     if (memberType.IsArray)
                     {
-                        ai = new ArrayArgumentHandler(this, info, memberType, arg.Required);
+                        ai = new ArrayArgumentHandler(this, info, memberType, min, max);
                     }
                     else if (isIList(memberType))
                     {
-                        ai = new IListArgumentHandler(this, info, memberType, arg.Required);
+                        ai = new IListArgumentHandler(this, info, memberType, min, max);
                     }
                     else
                     {

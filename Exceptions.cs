@@ -101,4 +101,9 @@ namespace NMaier.GetOptNet
         public RequiredOptionMissingException(string Message) : base(Message) { }
         internal RequiredOptionMissingException(ArgumentHandler aOption) : this(String.Format("Required option {0} wasn't specified", aOption.Name.ToUpper())) { }
     }
+
+    public class MultipleArgumentCountException : GetOptException
+    {
+        public MultipleArgumentCountException(string Message) : base(Message) { }
+    }
 }
