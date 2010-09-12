@@ -37,6 +37,7 @@ namespace NMaier.GetOptNet
         protected Type type, elementType;
 
         protected TypeConverter converter;
+        protected bool wasSet = false;
         private bool isflag;
         private bool acceptsMultiple;
         private bool required = false;
@@ -76,25 +77,32 @@ namespace NMaier.GetOptNet
                 case MemberTypes.Field:
                     FieldInfo fi = info as FieldInfo;
                     fi.SetValue(obj, toAssign);
-                    return;
+                    break;
 
                 case MemberTypes.Property:
                     PropertyInfo pi = info as PropertyInfo;
                     pi.SetValue(obj, toAssign, null);
-                    return;
+                    break;
 
                 default:
                     throw new ProgrammingError("w00t?");
             }
+            wasSet = true;
         }
 
         abstract public void Assign(string toAssign);
-        abstract public void Finish();
+        virtual public void Finish()
+        {
+            if (required && !wasSet)
+            {
+                throw new GetOptException(String.Format("Required parameter {0} wasn't specified", Name));
+            }
+            wasSet = false;
+        }
     }
 
     sealed internal class PlainArgumentHandler : ArgumentHandler
     {
-        private bool wasSet = false;
         private ArgumentCollision collision;
 
         public PlainArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, ArgumentCollision aCollision, bool aRequired)
@@ -118,19 +126,12 @@ namespace NMaier.GetOptNet
                         break;
                 }
             }
-            wasSet = true;
             InternalAssign(InternalConvert(toAssign));
-        }
-
-        public override void Finish()
-        {
-            wasSet = false;
         }
     }
 
     sealed internal class FlagArgumentHandler : ArgumentHandler
     {
-        private bool wasSet = false;
         private bool whenSet = true;
         private ArgumentCollision collision;
 
@@ -155,13 +156,7 @@ namespace NMaier.GetOptNet
                         break;
                 }
             }
-            wasSet = true;
             InternalAssign(whenSet);
-        }
-
-        public override void Finish()
-        {
-            wasSet = false;
         }
     }
 
@@ -179,6 +174,7 @@ namespace NMaier.GetOptNet
         public override void Finish()
         {
             InternalAssign((current as IConvertible).ToType(type, null));
+            base.Finish();
             current = 0;
         }
     }
@@ -202,6 +198,7 @@ namespace NMaier.GetOptNet
         public override void Finish()
         {
             InternalAssign(listType.GetMethod("ToArray").Invoke(list, null));
+            base.Finish();
             listType.GetMethod("Clear").Invoke(list, null);
         }
 
@@ -231,9 +228,7 @@ namespace NMaier.GetOptNet
         public override void Assign(string toAssign)
         {
             type.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign) });
-        }
-        public override void Finish()
-        {
+            wasSet = true;
         }
     }
 }
