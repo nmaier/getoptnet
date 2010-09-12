@@ -53,7 +53,7 @@ namespace NMaier.GetOptNet
     /// <seealso cref="ShortArgument"/>
     /// <seealso cref="ShortArgumentAlias"/>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
-    public class Argument : Attribute
+    sealed public class Argument : Attribute
     {
         private string arg = "";
         private string helptext = "";
@@ -129,7 +129,7 @@ namespace NMaier.GetOptNet
     /// Defines a short argument.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
-    public class ShortArgument : Attribute
+    sealed public class ShortArgument : Attribute
     {
         private char arg;
 
@@ -158,7 +158,7 @@ namespace NMaier.GetOptNet
     /// See also: <seealso cref="GetOptOptions.UsageShowAliases"/>
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
-    public class ArgumentAlias : Attribute
+    sealed public class ArgumentAlias : Attribute
     {
         private string alias;
 
@@ -186,7 +186,7 @@ namespace NMaier.GetOptNet
     /// Defines an short alias name for an argument.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
-    public class ShortArgumentAlias : Attribute
+    sealed public class ShortArgumentAlias : Attribute
     {
         private char alias;
 
@@ -214,7 +214,7 @@ namespace NMaier.GetOptNet
     /// Defines a flag (boolean) argument
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
-    public class FlagArgument : Attribute
+    sealed public class FlagArgument : Attribute
     {
         private bool whenset = false;
 
@@ -238,25 +238,37 @@ namespace NMaier.GetOptNet
     /// Specifies that an argument will not take a value, but instead will count the number of occurances in the user supplied arguments.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
-    public class Counted : Attribute { }
+    sealed public class Counted : Attribute { }
 
+    /// <summary>
+    /// Specifies for an array/list argument the min/max constraints.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
     public class MultipleArguments : Attribute
     {
         private uint min = 0;
         private uint max = 0;
 
+        /// <summary>
+        /// Minimum number of required parameters
+        /// </summary>
         public uint Min
         {
             get { return min; }
             set { min = value; }
         }
+        /// <summary>
+        /// Maxiumum number of required parameters
+        /// </summary>
         public uint Max
         {
             get { return max; }
             set { max = value; }
         }
 
+        /// <summary>
+        /// Exact number of required parameters
+        /// </summary>
         public uint Exact
         {
             get
@@ -278,7 +290,18 @@ namespace NMaier.GetOptNet
     /// Specifies the destination of any non-argument strings (aka. parameters) the user supplies.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
-    public class Parameters : MultipleArguments {}
+    sealed public class Parameters : MultipleArguments {
+        private string helpvar = "param";
+
+        /// <summary>
+        /// Help variable text to be used in usage output
+        /// </summary>
+        public string HelpVar
+        {
+            get { return helpvar; }
+            set { helpvar = value; }
+        }
+    }
 
 
     /// <summary>
@@ -371,7 +394,7 @@ namespace NMaier.GetOptNet
     /// Defines Options for GetOpt derived classes
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class GetOptOptions : Attribute
+    sealed public class GetOptOptions : Attribute
     {
         private ArgumentPrefixType apt = ArgumentPrefixType.Both;
         private ArgumentCaseType act = ArgumentCaseType.Insensitive;

@@ -41,6 +41,7 @@ namespace NMaier.GetOptNet
         private bool acceptsMultiple;
         private bool required = false;
 
+        public MemberInfo Info { get { return info; } }
         public bool IsFlag { get { return isflag; } }
         public bool AcceptsMultiple { get { return acceptsMultiple; } }
         public string Name { get { return info.Name; } }
@@ -208,6 +209,9 @@ namespace NMaier.GetOptNet
             }
             base.Finish();
         }
+
+        public uint Min { get { return min; } }
+        public uint Max { get { return max; } }
 
         protected void CheckAssign()
         {

@@ -44,7 +44,7 @@ namespace NMaier.GetOptNet
         private static Regex regSlashes = new Regex("^\\s*/([\\w\\d_-]+)(?:=(.+)|\\s*)?$", RegexOptions.Compiled);
 
 
-        private ArgumentHandler parameters;
+        private MultipleArgumentHandler parameters;
         private Dictionary<string, ArgumentHandler> longs = new Dictionary<string, ArgumentHandler>();
         private Dictionary<char, ArgumentHandler> shorts = new Dictionary<char, ArgumentHandler>();
         private List<ArgumentHandler> handlers = new List<ArgumentHandler>();

@@ -173,21 +173,44 @@ namespace NMaier.GetOptNet
         public string AssembleUsage(int width)
         {
             Type me = GetType();
-            string nl = Environment.NewLine;
+            string NL = Environment.NewLine;
             BindingFlags flags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance;
 
             StringBuilder rv = new StringBuilder();
 
+            string image = new FileInfo(Assembly.GetEntryAssembly().Location).Name;
             if (!String.IsNullOrEmpty(opts.UsageIntro))
             {
                 rv.Append(opts.UsageIntro);
             }
+            else if (parameters != null)
+            {
+                Parameters paramInfo = (parameters.Info.GetCustomAttributes(typeof(Parameters), false) as Parameters[])[0];
+                if (parameters.Min == 1 && parameters.Min == parameters.Max)
+                {
+                    rv.AppendFormat("Usage: {0} [OPTION] [...] {1}", image, paramInfo.HelpVar);
+                }
+                else if (parameters.Min == 2 && parameters.Min == parameters.Max)
+                {
+                    rv.AppendFormat("Usage: {0} [OPTION] [...] {1} {1}", image, paramInfo.HelpVar);
+                }
+                else if (parameters.Min > 0 && parameters.Min == parameters.Max)
+                {
+                    rv.AppendFormat("Usage: {0} [OPTION] [...] {1}*{2}", image, paramInfo.HelpVar, parameters.Min);
+                }
+                else
+                {
+                    rv.AppendFormat("Usage: {0} [OPTION] [...] {1} {1} ...", image, paramInfo.HelpVar);
+                }
+            }
             else
             {
-                rv.AppendFormat("Usage: {0} [OPTION] [...] parameters ...", new FileInfo(Assembly.GetEntryAssembly().Location).Name);
+                rv.AppendFormat("Usage: {0} [OPTION] [...]", image);
             }
-            rv.Append(nl);
-            rv.Append(nl);
+            rv.Append(NL);
+            rv.Append(NL);
+            rv.Append("Options:");
+            rv.Append(NL);
 
             List<OptInfo> options = new List<OptInfo>();
 
@@ -228,7 +251,7 @@ namespace NMaier.GetOptNet
                     ArgumentHandler handler = longs[longName];
                     OptInfo oi = new OptInfo(name, handler.IsFlag, handler.AcceptsMultiple, arg.Helptext, hv.ToUpper(), opts.UsagePrefix);
                     oi.Longs.Add(longName);
-                    
+
                     if (sa.Length != 0)
                     {
                         oi.Shorts.Add(new string(sa[0].GetArg(), 1));
@@ -241,7 +264,7 @@ namespace NMaier.GetOptNet
                             if (opts.CaseType == ArgumentCaseType.Insensitive || opts.CaseType == ArgumentCaseType.OnlyLower)
                             {
                                 an = an.ToLower();
-                            }                            
+                            }
                             oi.Longs.Add(an);
                         }
                         foreach (ShortArgumentAlias alias in info.GetCustomAttributes(typeof(ShortArgumentAlias), true))
@@ -261,16 +284,19 @@ namespace NMaier.GetOptNet
             foreach (OptInfo o in options)
             {
                 int len = o.Argtext.Length + 3;
-                if (len <= maxLine) {
+                if (len <= maxLine)
+                {
                     maxArg = Math.Max(maxArg, len);
                 }
             }
-            
-            foreach (OptInfo o in options) {
+
+            foreach (OptInfo o in options)
+            {
                 rv.Append(o.Argtext);
                 int len = o.Argtext.Length;
-                if (len > maxLine) {
-                    rv.Append(nl);
+                if (len > maxLine)
+                {
+                    rv.Append(NL);
                     len = 0;
                 }
                 rv.Append(new string(' ', maxArg - len));
@@ -283,21 +309,21 @@ namespace NMaier.GetOptNet
                     string w = words.Dequeue() + " ";
                     if (len < w.Length)
                     {
-                        rv.Append(nl);
+                        rv.Append(NL);
                         rv.Append(new string(' ', maxArg));
                         len = width - maxArg;
                     }
                     rv.Append(w);
                     len -= w.Length;
                 }
-                rv.Append(nl);
+                rv.Append(NL);
             }
             if (!String.IsNullOrEmpty(opts.UsageEpilog))
             {
-                rv.Append(nl);
+                rv.Append(NL);
                 rv.Append(opts.UsageEpilog);
             }
-            rv.Append(nl);
+            rv.Append(NL);
             return rv.ToString();
         }
     }
