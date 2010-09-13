@@ -166,7 +166,7 @@ namespace NMaier.GetOptNet
         {
             if (CheckCollision(collision))
             {
-                InternalAssign(InternalConvert(toAssign));
+                InternalAssign(whenSet);
             }
         }
     }
