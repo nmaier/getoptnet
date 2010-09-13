@@ -273,6 +273,7 @@ namespace NMaier.GetOptNet
             CheckAssign();
             type.GetMethod("Add").Invoke(list, new object[] { InternalConvert(toAssign, elementType) });
             added++;
+            wasSet = true;
         }
     }
 }
