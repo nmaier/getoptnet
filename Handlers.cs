@@ -169,6 +169,14 @@ namespace NMaier.GetOptNet
                 InternalAssign(whenSet);
             }
         }
+        public override void Finish()
+        {
+            if (!wasSet)
+            {
+                InternalAssign(!whenSet);
+            }
+            base.Finish();
+        }
     }
 
     sealed internal class CounterArgumentHandler : ArgumentHandler
