@@ -8,19 +8,19 @@ namespace TestApp
 {
     class Program
     {
-        [GetOptOptions(OnUnknownArgument=UnknownArgumentsAction.Throw, UsageEpilog = "That's all, folks")]
+        [GetOptOptions(OnUnknownArgument = UnknownArgumentsAction.Throw, UsageEpilog = "That's all, folks")]
         class Opts : GetOpt
         {
 
-            [Parameters]
+            [Parameters(Min = 1, Max = 3)]
             public List<String> Parameters = new List<string>();
             //public string[] Parameters = new string[0];
 
-            [Argument(Helptext="Provide some string")]
+            [Argument(Helptext = "Provide some string")]
             public string Str = "some string";
 
             [ArgumentAlias("multi")]
-            [Argument("multiargument", Helptext = "You may provide multiple strings", Helpvar="list item")]
+            [Argument("multiargument", Helptext = "You may provide multiple strings", Helpvar = "list item")]
             [ArgumentAlias("multiarg")]
             [ArgumentAlias("ma")]
             [ShortArgument('m')]
@@ -32,7 +32,7 @@ namespace TestApp
             [ShortArgumentAlias('k')]
             public int[] Arr = new int[0];
 
-            [Argument(Helptext="LONG NAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMEEEEEEEE indeed!")]
+            [Argument(Helptext = "LONG NAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMEEEEEEEE indeed!")]
             [ShortArgument('b')]
             public bool Flag = false;
 
@@ -65,6 +65,21 @@ namespace TestApp
             [Argument(Helptext = "Doubles anyone")]
             public double SomeDouble = 0.1;
 
+            [Argument(Required = true)]
+            [ShortArgument('r')]
+            public string required = null;
+
+            [Argument]
+            [FlagArgument(true)]
+            public bool defaultFalse = true;
+
+            [Argument]
+            [FlagArgument(false)]
+            public bool defaultTrue = false;
+
+            [Argument]
+            [MultipleArguments(Exact = 2)]
+            public string[] requiredTwo = null;
         }
 
         static void Main(string[] args)
@@ -84,6 +99,8 @@ namespace TestApp
                 Console.WriteLine("Validated prop: " + opts.Prop);
                 Console.WriteLine("SomeInt: " + opts.SomeInt);
                 Console.WriteLine("SomeDouble: " + opts.SomeDouble);
+                Console.WriteLine("DefaultFalse: " + opts.defaultFalse);
+                Console.WriteLine("DefaultTrue: " + opts.defaultTrue);
 
                 foreach (int p in opts.Arr)
                 {
@@ -110,7 +127,6 @@ namespace TestApp
                 Console.WriteLine();
                 opts.PrintUsage();
             }
-            while (true) Thread.Sleep(1000);
         }
     }
 }
