@@ -1,0 +1,20 @@
+h1. GetOpt.Net
+
+bq. Advanced GetOpt implementation in C#
+
+h2. Description
+
+Quickly implement command line arguments handling in .Net applications using annotations and automatic type conversations.
+
+It's as easy as spicing your class with some fields and properties, adding some GetOptNet annotations and calling .Parse(args). GetOptNet will then inspect the command line, validate and assign values to your fields and properties and be done.
+
+Arguments can be flags (boolean), any primitive type, any constructable type, arrays or List<>s.
+They can be marked "required", and for lists a minimum and maximum number of values a user may give can be specified.
+
+h2. Examples
+
+See TestApp.
+
+h2. License
+
+MIT License. See LICENSE file for specifics.
