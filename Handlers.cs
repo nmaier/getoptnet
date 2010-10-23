@@ -215,6 +215,10 @@ namespace NMaier.GetOptNet
             {
                 throw new MultipleArgumentCountException(String.Format("Not enough arguments supplied for {0}", Name.ToUpper()));
             }
+            if (added == 0)
+            {
+                return;
+            }
             base.Finish();
         }
 
@@ -249,6 +253,10 @@ namespace NMaier.GetOptNet
         }
         public override void Finish()
         {
+            if (added == 0)
+            {
+                return;
+            }
             InternalAssign(listType.GetMethod("ToArray").Invoke(list, null));
             base.Finish();
             listType.GetMethod("Clear").Invoke(list, null);
