@@ -12,38 +12,38 @@ namespace TestApp
         class Opts : GetOpt
         {
 
-            [Parameters(Min = 1, Max = 3)]
+            [Parameters(Min = 2, Max = 3)]
             public List<String> Parameters = new List<string>();
             //public string[] Parameters = new string[0];
 
-            [Argument(Helptext = "Provide some string")]
+            [Argument(HelpText = "Provide some string")]
             public string Str = "some string";
 
             [ArgumentAlias("multi")]
-            [Argument("multiargument", Helptext = "You may provide multiple strings", Helpvar = "list item")]
+            [Argument("multiargument", HelpText = "You may provide multiple strings", HelpVar = "list item")]
             [ArgumentAlias("multiarg")]
             [ArgumentAlias("ma")]
             [ShortArgument('m')]
             public List<String> Multi = new List<string>();
 
 
-            [Argument(Helptext = "You may provide multiple Arguments, all of which must be integers")]
+            [Argument(HelpText = "You may provide multiple Arguments, all of which must be integers")]
             [ShortArgument('a')]
             [ShortArgumentAlias('k')]
             public int[] Arr = new int[0];
 
-            [Argument(Helptext = "LONG NAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMEEEEEEEE indeed!")]
+            [Argument(HelpText = "LONG NAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMEEEEEEEE indeed!")]
             [ShortArgument('b')]
             public bool Flag = false;
 
 
-            [Argument(Helptext = "Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text")]
-            [Counted]
+            [Argument(HelpText = "Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text, Help text")]
+            [CountedArgument]
             [ShortArgument('c')]
             public UInt64 Counter = 0;
 
             private string _prop = "a chicken crossed the road";
-            [Argument(Helptext = "Property taking a string that must start with 'a'")]
+            [Argument(HelpText = "Property taking a string that must start with 'a'")]
             [ShortArgument('d')]
             [ArgumentAlias("foo")]
             public string Prop
@@ -59,10 +59,10 @@ namespace TestApp
                 }
             }
 
-            [Argument(Helptext = "Integers anyone")]
+            [Argument(HelpText = "Integers anyone")]
             public int SomeInt = 1;
 
-            [Argument(Helptext = "Doubles anyone")]
+            [Argument(HelpText = "Doubles anyone")]
             public double SomeDouble = 0.1;
 
             [Argument(Required = true)]

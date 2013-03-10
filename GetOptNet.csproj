@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NMaier.GetOptNet</RootNamespace>
     <AssemblyName>GetOptNet</AssemblyName>
-    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>getoptnet.snk</AssemblyOriginatorKeyFile>
@@ -33,6 +33,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -52,20 +53,47 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>getoptnet.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes.cs" />
-    <Compile Include="Exceptions.cs" />
+    <Compile Include="Attributes\Argument.cs" />
+    <Compile Include="Attributes\ArgumentAlias.cs" />
+    <Compile Include="Attributes\ArgumentCaseType.cs" />
+    <Compile Include="Attributes\ArgumentCollision.cs" />
+    <Compile Include="Handlers\ArgumentHandler.cs" />
+    <Compile Include="Attributes\ArgumentPrefixType.cs" />
+    <Compile Include="Handlers\ArrayArgumentHandler.cs" />
+    <Compile Include="Handlers\CounterArgumentHandler.cs" />
+    <Compile Include="Exceptional\DuplicateArgumentException.cs" />
+    <Compile Include="Handlers\FlagArgumentHandler.cs" />
+    <Compile Include="GetOptException.cs" />
+    <Compile Include="Handlers\IListArgumentHandler.cs" />
+    <Compile Include="Exceptional\InvalidValueException.cs" />
+    <Compile Include="Exceptional\MultipleArgumentCountException.cs" />
+    <Compile Include="Handlers\MultipleArgumentHandler.cs" />
+    <Compile Include="OptInfo.cs" />
+    <Compile Include="Exceptional\ProgrammingError.cs" />
+    <Compile Include="Exceptional\RequiredOptionMissingException.cs" />
+    <Compile Include="Attributes\ShortArgumentAlias.cs" />
+    <Compile Include="Attributes\CountedArgument.cs" />
+    <Compile Include="Exceptional\UnknownAttributeException.cs" />
+    <Compile Include="Attributes\FlagArgument.cs" />
     <Compile Include="GetOpt.cs" />
+    <Compile Include="Attributes\GetOptOptions.cs" />
     <Compile Include="GetOpt_Initialize.cs" />
     <Compile Include="GetOpt_Update.cs" />
     <Compile Include="GetOpt_Usage.cs" />
-    <Compile Include="Handlers.cs" />
+    <Compile Include="Handlers\PlainArgumentHandler.cs" />
+    <Compile Include="Attributes\MultipleArguments.cs" />
+    <Compile Include="Attributes\Parameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Attributes\ShortArgument.cs" />
+    <Compile Include="Attributes\UnknownArgumentsAction.cs" />
+    <Compile Include="Attributes\UsageAliasShowOption.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

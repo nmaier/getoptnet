@@ -10,8 +10,8 @@
     <projectUrl>https://github.com/nmaier/getoptnet</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Added some nuspec tags and figured out build config</releaseNotes>
-    <copyright>Copyright 2012</copyright>
+    <releaseNotes>Code and API cleanup</releaseNotes>
+    <copyright>Copyright 2013</copyright>
     <tags>GetOpt option options optparse arguments args argparse</tags>
   </metadata>
 </package>
