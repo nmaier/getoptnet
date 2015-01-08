@@ -203,7 +203,10 @@ namespace NMaier.GetOptNet
             break;
           }
         }
-
+        if (parameters == null)
+        {
+          throw new GetOptException(string.Format("Unamed paramater value \"{0}\" not found.", c));
+        }
         UpdateHandler(parameters, c, "<parameters>");
       }
 
