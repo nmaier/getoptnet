@@ -5,23 +5,22 @@ namespace NMaier.GetOptNet
 {
   internal sealed class CounterArgumentHandler : ArgumentHandler
   {
-    private Int64 current = 0;
+    private long current;
 
-
-    public CounterArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, bool aRequired)
-      : base(aObj, aInfo, aType, true, aRequired)
+    public CounterArgumentHandler(object handledObject, MemberInfo memberInfo, Type elementType, bool required)
+      : base(handledObject, memberInfo, elementType, true, required)
     {
     }
 
 
-    public override void Assign(string toAssign)
+    internal override void Assign(string toAssign)
     {
       current += 1;
     }
 
-    public override void Finish()
+    internal override void Finish()
     {
-      InternalAssign((current as IConvertible).ToType(type, null));
+      InternalAssign((current as IConvertible).ToType(Type, null));
       base.Finish();
       current = 0;
     }

@@ -1,119 +1,82 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
+using JetBrains.Annotations;
+using static System.String;
 
 namespace NMaier.GetOptNet
 {
   internal abstract class ArgumentHandler
   {
-    private readonly bool isflag;
+    private static readonly Dictionary<string, bool> booleans =
+      new Dictionary<string, bool>(StringComparer.CurrentCultureIgnoreCase)
+      {
+        {"yes", true},
+        {"on", true},
+        {"true", true},
+        {"1", true},
+        {"no", false},
+        {"off", false},
+        {"false", false},
+        {"0", false}
+      };
 
-    private readonly bool required = false;
-
-
-    protected Type elementType;
-
-    protected MemberInfo info;
-
-    protected object obj;
-
-    protected Type type;
-
-    protected bool wasSet = false;
-
-
-    public ArgumentHandler(object aObj, MemberInfo aInfo, Type aType, bool aIsFlag, bool aRequired)
+    protected static object InternalConvert([NotNull] string from, [NotNull] Type type)
     {
-      isflag = aIsFlag;
-      obj = aObj;
-      info = aInfo;
-      type = aType;
-      elementType = type;
-      required = aRequired;
-    }
-
-
-    public Type ElementType
-    {
-      get {
-        return elementType;
+      if (from == null) {
+        throw new ArgumentNullException(nameof(from));
       }
-    }
-    public MemberInfo Info
-    {
-      get {
-        return info;
-      }
-    }
-    public bool IsFlag
-    {
-      get {
-        return isflag;
-      }
-    }
-    public string Name
-    {
-      get {
-        return info.Name;
-      }
-    }
 
+      if (type == null) {
+        throw new ArgumentNullException(nameof(type));
+      }
 
-    protected bool CheckCollision(ArgumentCollision aCollision)
-    {
-      if (wasSet) {
-        switch (aCollision) {
-          case ArgumentCollision.Throw:
-            throw new DuplicateArgumentException(String.Format(CultureInfo.CurrentCulture, "Option {0} is specified more than once", Name));
-          case ArgumentCollision.Ignore:
-            return false;
-          default:
-            return true;
+      switch (type) {
+      case Type t when t == typeof(string):
+        return from;
+      case Type t when t == typeof(bool):
+        if (booleans.TryGetValue(from.Trim(), out var b)) {
+          return b;
         }
+
+        return bool.Parse(from);
+      case Type t when t == typeof(byte):
+        return byte.Parse(from);
+      case Type t when t == typeof(sbyte):
+        return sbyte.Parse(from);
+      case Type t when t == typeof(char):
+        return char.Parse(from);
+      case Type t when t == typeof(short):
+        return short.Parse(from);
+      case Type t when t == typeof(ushort):
+        return ushort.Parse(from);
+      case Type t when t == typeof(int):
+        return int.Parse(from);
+      case Type t when t == typeof(uint):
+        return uint.Parse(from);
+      case Type t when t == typeof(long):
+        return int.Parse(from);
+      case Type t when t == typeof(ulong):
+        return uint.Parse(from);
+      case Type t when t == typeof(DirectoryInfo):
+        return new DirectoryInfo(from.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+      case Type t when t == typeof(FileInfo):
+        return new FileInfo(from);
       }
 
-      return true;
-    }
-
-    protected void InternalAssign(object toAssign)
-    {
-      try {
-        switch (info.MemberType) {
-          case MemberTypes.Field:
-            var fi = info as FieldInfo;
-            fi.SetValue(obj, toAssign);
-            break;
-
-          case MemberTypes.Property:
-            var pi = info as PropertyInfo;
-            pi.SetValue(obj, toAssign, null);
-            break;
-
-          default:
-            throw new ProgrammingError("w00t?");
-        }
-      }
-      catch (TargetInvocationException ex) {
-        throw ex.InnerException;
-      }
-      wasSet = true;
-    }
-
-    protected object InternalConvert(string from)
-    {
-      return InternalConvert(from, type);
-    }
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-    protected static object InternalConvert(string from, Type type)
-    {
       try {
         return TypeDescriptor.GetConverter(type).ConvertFromString(from);
       }
       catch (Exception ex) {
         try {
-          return type.GetConstructor(new Type[] { from.GetType() }).Invoke(new object[] { from });
+          var ctor = type.GetConstructor(new[]
+          {
+            typeof(string)
+          }) ?? throw new ProgrammingErrorException("No constructor for type");
+          return ctor.Invoke(new object[] {from});
         }
         catch (Exception) {
           throw new NotSupportedException(ex.Message);
@@ -121,15 +84,101 @@ namespace NMaier.GetOptNet
       }
     }
 
+    protected readonly object HandledObject;
 
-    public abstract void Assign(string toAssign);
+    protected readonly MemberInfo MemberInfo;
 
-    public virtual void Finish()
+    private readonly bool required;
+
+    protected readonly Type Type;
+
+    protected Type InternalElementType;
+
+    protected bool WasSet;
+
+    protected ArgumentHandler(object handledObject, MemberInfo memberInfo, Type elementType, bool isFlag, bool required)
     {
-      if (required && !wasSet) {
+      IsFlag = isFlag;
+      HandledObject = handledObject;
+      MemberInfo = memberInfo;
+      Type = elementType;
+      InternalElementType = Type;
+      this.required = required;
+    }
+
+
+    internal Type ElementType => InternalElementType;
+
+    internal MemberInfo Info => MemberInfo;
+
+    internal bool IsFlag { get; }
+
+    internal string Name => MemberInfo.Name;
+
+    protected object InternalConvert(string from)
+    {
+      return InternalConvert(from, Type);
+    }
+
+    internal abstract void Assign(string toAssign);
+
+    internal virtual void Finish()
+    {
+      if (required && !WasSet) {
         throw new RequiredOptionMissingException(this);
       }
-      wasSet = false;
+
+      WasSet = false;
+    }
+
+    internal void InternalAssign(object toAssign)
+    {
+      try {
+        // ReSharper disable once SwitchStatementMissingSomeCases
+        switch (MemberInfo.MemberType) {
+        case MemberTypes.Field when MemberInfo is FieldInfo fi:
+          fi.SetValue(HandledObject, toAssign);
+          break;
+
+        case MemberTypes.Property when MemberInfo is PropertyInfo pi:
+          pi.SetValue(HandledObject, toAssign, null);
+          break;
+
+        default:
+          throw new ProgrammingErrorException("Unsupported member type");
+        }
+      }
+      catch (TargetInvocationException ex) {
+        if (ex.InnerException != null) {
+          throw ex.InnerException;
+        }
+
+        throw;
+      }
+
+      WasSet = true;
+    }
+
+    internal bool ShouldAssign(ArgumentCollision collision)
+    {
+      if (!WasSet) {
+        return true;
+      }
+
+      switch (collision) {
+      case ArgumentCollision.Throw:
+        throw new DuplicateArgumentException(
+          Format(
+            CultureInfo.CurrentCulture,
+            "Option {0} is specified more than once",
+            Name));
+      case ArgumentCollision.Ignore:
+        return false;
+      case ArgumentCollision.Overwrite:
+        return true;
+      default:
+        throw new ArgumentOutOfRangeException(nameof(collision), collision, null);
+      }
     }
   }
 }

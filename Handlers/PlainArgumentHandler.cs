@@ -7,17 +7,17 @@ namespace NMaier.GetOptNet
   {
     private readonly ArgumentCollision collision;
 
-
-    public PlainArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, ArgumentCollision aCollision, bool aRequired)
-      : base(aObj, aInfo, aType, false, aRequired)
+    public PlainArgumentHandler(object handledObject, MemberInfo memberInternalInfo, Type elementType,
+      ArgumentCollision collision, bool required)
+      : base(handledObject, memberInternalInfo, elementType, false, required)
     {
-      collision = aCollision;
+      this.collision = collision;
     }
 
 
-    public override void Assign(string toAssign)
+    internal override void Assign(string toAssign)
     {
-      if (CheckCollision(collision)) {
+      if (ShouldAssign(collision)) {
         InternalAssign(InternalConvert(toAssign));
       }
     }

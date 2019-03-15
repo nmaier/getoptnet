@@ -1,22 +1,22 @@
-using System;
-
 namespace NMaier.GetOptNet
 {
   /// <summary>
-  /// Specifies what to do when an unknown (unspecified) argument is encountered.
+  ///   Specifies what to do when an unknown (unspecified) argument is encountered.
   /// </summary>
   public enum UnknownArgumentsAction
   {
     /// <summary>
-    /// Argument should be ignored
+    ///   ArgumentAttribute should be ignored
     /// </summary>
     Ignore,
+
     /// <summary>
-    /// Place both argument name and value (if any) in Parameters
+    ///   Place both argument name and value (if any) in ParametersAttribute
     /// </summary>
     PlaceInParameters,
+
     /// <summary>
-    /// An exception should be thrown. That is an UnknownArgumentException
+    ///   An exception should be thrown. That is an UnknownArgumentException
     /// </summary>
     Throw
   }

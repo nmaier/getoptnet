@@ -6,35 +6,36 @@ namespace NMaier.GetOptNet
 {
   /// <inheritdoc />
   /// <summary>
-  ///   Base exception for GetOptNet
+  ///   Custom exception that is thrown whenever the programmer made a mistake
   /// </summary>
   [Serializable]
   [PublicAPI]
-  public class GetOptException : Exception
+  public class ProgrammingErrorException : SystemException
   {
-    protected GetOptException(SerializationInfo info, StreamingContext context)
+    protected ProgrammingErrorException(SerializationInfo info, StreamingContext context)
       : base(info, context)
     {
     }
 
+
     [PublicAPI]
-    public GetOptException()
+    public ProgrammingErrorException()
     {
     }
 
     /// <inheritdoc />
     /// <summary>
-    ///   Constructs a GetOptException exception
+    ///   Constructs a ProgrammingErrorException exception
     /// </summary>
     /// <param name="message">Message associated with the exception</param>
     [PublicAPI]
-    public GetOptException(string message)
+    public ProgrammingErrorException(string message)
       : base(message)
     {
     }
 
     [PublicAPI]
-    public GetOptException(string message, Exception innerException)
+    public ProgrammingErrorException(string message, Exception innerException)
       : base(message, innerException)
     {
     }

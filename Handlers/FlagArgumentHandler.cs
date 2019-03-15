@@ -1,4 +1,3 @@
-using System;
 using System.Reflection;
 
 namespace NMaier.GetOptNet
@@ -7,29 +6,30 @@ namespace NMaier.GetOptNet
   {
     private readonly ArgumentCollision collision;
 
-    private readonly bool whenSet = true;
+    private readonly bool whenSet;
 
-
-    public FlagArgumentHandler(Object aObj, MemberInfo aInfo, ArgumentCollision aCollision, bool aRequired, Boolean aWhenSet)
-      : base(aObj, aInfo, typeof(bool), true, aRequired)
+    public FlagArgumentHandler(object handledObject, MemberInfo memberInfo, ArgumentCollision aCollision, bool required,
+      bool whenSet)
+      : base(handledObject, memberInfo, typeof(bool), true, required)
     {
       collision = aCollision;
-      whenSet = aWhenSet;
+      this.whenSet = whenSet;
     }
 
 
-    public override void Assign(string toAssign)
+    internal override void Assign(string toAssign)
     {
-      if (CheckCollision(collision)) {
+      if (ShouldAssign(collision)) {
         InternalAssign(whenSet);
       }
     }
 
-    public override void Finish()
+    internal override void Finish()
     {
-      if (!wasSet) {
+      if (!WasSet) {
         InternalAssign(!whenSet);
       }
+
       base.Finish();
     }
   }

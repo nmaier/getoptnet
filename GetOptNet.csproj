@@ -1,128 +1,37 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{ABF98F9F-CF28-4242-9459-B10AAA00E305}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NMaier.GetOptNet</RootNamespace>
+    <TargetFrameworks>netstandard2.0;net47;net45;net40</TargetFrameworks>
+
     <AssemblyName>GetOptNet</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <RootNamespace>NMaier.GetOptNet</RootNamespace>
+    
+    <PackageId>GetOptNet</PackageId>
+    <Title>GetOptNet class library</Title>
+    <Authors>Nils Maier</Authors>
+    <Company />
+    <Copyright>Copyright 2009-2019</Copyright>
+    <Description>Commandline Argument Parser for .Net</Description>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageLicenseUrl>https://raw.github.com/nmaier/getoptnet/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/nmaier/getoptnet</PackageProjectUrl>
+    <PackageTags>GetOpt, option, options, optparse, arguments, args, argparse, command line</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/nmaier/getoptnet</RepositoryUrl>
+    <Version>3.1.4</Version>
+    
+    <Deterministic>true</Deterministic>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>getoptnet.snk</AssemblyOriginatorKeyFile>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\GetOptNet.XML</DocumentationFile>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>getoptnet.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
+    <PackageReference Include="JetBrains.Annotations" Version="2018.3.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Attributes\Argument.cs" />
-    <Compile Include="Attributes\ArgumentAlias.cs" />
-    <Compile Include="Attributes\ArgumentCaseType.cs" />
-    <Compile Include="Attributes\ArgumentCollision.cs" />
-    <Compile Include="Handlers\ArgumentHandler.cs" />
-    <Compile Include="Attributes\ArgumentPrefixType.cs" />
-    <Compile Include="Handlers\ArrayArgumentHandler.cs" />
-    <Compile Include="Handlers\CounterArgumentHandler.cs" />
-    <Compile Include="Exceptional\DuplicateArgumentException.cs" />
-    <Compile Include="Handlers\FlagArgumentHandler.cs" />
-    <Compile Include="GetOptException.cs" />
-    <Compile Include="Handlers\IListArgumentHandler.cs" />
-    <Compile Include="Exceptional\InvalidValueException.cs" />
-    <Compile Include="Exceptional\MultipleArgumentCountException.cs" />
-    <Compile Include="Handlers\MultipleArgumentHandler.cs" />
-    <Compile Include="OptInfo.cs" />
-    <Compile Include="Exceptional\ProgrammingError.cs" />
-    <Compile Include="Exceptional\RequiredOptionMissingException.cs" />
-    <Compile Include="Attributes\ShortArgumentAlias.cs" />
-    <Compile Include="Attributes\CountedArgument.cs" />
-    <Compile Include="Exceptional\UnknownAttributeException.cs" />
-    <Compile Include="Attributes\FlagArgument.cs" />
-    <Compile Include="GetOpt.cs" />
-    <Compile Include="Attributes\GetOptOptions.cs" />
-    <Compile Include="GetOpt_Initialize.cs" />
-    <Compile Include="GetOpt_Update.cs" />
-    <Compile Include="GetOpt_Usage.cs" />
-    <Compile Include="Handlers\PlainArgumentHandler.cs" />
-    <Compile Include="Attributes\MultipleArguments.cs" />
-    <Compile Include="Attributes\Parameters.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Attributes\ShortArgument.cs" />
-    <Compile Include="Attributes\UnknownArgumentsAction.cs" />
-    <Compile Include="Attributes\UsageAliasShowOption.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="GetOptNet.nuspec" />
-    <None Include="getoptnet.snk" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

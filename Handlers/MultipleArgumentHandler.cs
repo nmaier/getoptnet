@@ -5,56 +5,47 @@ namespace NMaier.GetOptNet
 {
   internal abstract class MultipleArgumentHandler : ArgumentHandler
   {
-    protected uint added = 0;
-
-    protected int max;
-
-    protected int min;
+    protected uint Added = 0;
 
 
-    public MultipleArgumentHandler(Object aObj, MemberInfo aInfo, Type aType, int aMin, int aMax)
-      : base(aObj, aInfo, aType, false, aMin > 0)
+    protected MultipleArgumentHandler(object handledObject, MemberInfo memberInternalInfo, Type elementType, int min,
+      int max)
+      : base(handledObject, memberInternalInfo, elementType, false, min > 0)
     {
-      min = aMin;
-      max = aMax;
+      Min = min;
+      Max = max;
     }
 
 
-    public int Max
-    {
-      get {
-        return max;
-      }
-    }
-    public int Min
-    {
-      get {
-        return min;
-      }
-    }
+    internal int Max { get; }
+
+    internal int Min { get; }
 
 
     protected void CheckAssign()
     {
-      if (max > 0 && added == max) {
-        throw new MultipleArgumentCountException(String.Format("Too many arguments supplied for {0}", Name.ToLower()));
+      if (Max > 0 && Added == Max) {
+        throw new MultipleArgumentCountException(
+          $"Too many arguments supplied for {Name.ToLower()}");
       }
     }
 
     protected void CheckFinish()
     {
-      if (added < min) {
-        throw new MultipleArgumentCountException(String.Format("Not enough arguments supplied for {0}", Name.ToLower()));
+      if (Added < Min) {
+        throw new MultipleArgumentCountException(
+          $"Not enough arguments supplied for {Name.ToLower()}");
       }
     }
 
 
-    public override void Finish()
+    internal override void Finish()
     {
       CheckFinish();
-      if (added == 0) {
+      if (Added == 0) {
         return;
       }
+
       base.Finish();
     }
   }
