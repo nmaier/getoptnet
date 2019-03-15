@@ -13,7 +13,8 @@
     <Copyright>Copyright 2009-2019</Copyright>
     <Description>Commandline Argument Parser for .Net</Description>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageLicenseUrl>https://raw.github.com/nmaier/getoptnet/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <!--<PackageLicenseUrl>https://raw.github.com/nmaier/getoptnet/master/LICENSE</PackageLicenseUrl>-->
     <PackageProjectUrl>https://github.com/nmaier/getoptnet</PackageProjectUrl>
     <PackageTags>GetOpt, option, options, optparse, arguments, args, argparse, command line</PackageTags>
     <RepositoryType>git</RepositoryType>
