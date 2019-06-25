@@ -43,7 +43,7 @@ namespace NMaier.GetOptNet
       var options = CollectOptInfos(category);
       var maxLine = (long)width / 2;
       var maxArg = width / 4;
-      maxArg = Math.Max((from o in options
+      maxArg = options.Count > 0 ? maxArg : Math.Max((from o in options
                          let len = o.Argtext.Length + 3
                          where len <= maxLine
                          select len).Max(), maxArg);

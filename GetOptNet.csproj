@@ -19,7 +19,7 @@
     <PackageTags>GetOpt, option, options, optparse, arguments, args, argparse, command line</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nmaier/getoptnet</RepositoryUrl>
-    <Version>3.1.4</Version>
+    <Version>3.1.6</Version>
     
     <Deterministic>true</Deterministic>
     <DebugType>portable</DebugType>

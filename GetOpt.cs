@@ -23,7 +23,7 @@ namespace NMaier.GetOptNet
       "^\\s*--([\\w\\d_-]+)(?:=(.+)|\\s*)?$", RegexOptions.Compiled);
 
     private static readonly Regex regDashesShort = new Regex(
-      "^\\s*-([\\w\\d]+)\\s*$", RegexOptions.Compiled);
+      "^\\s*-([\\w\\d].*?)\\s*$", RegexOptions.Compiled);
 
     private static readonly Regex regSlashes = new Regex(
       "^\\s*/([\\w\\d_-]+)(?:=(.+)|\\s*)?$", RegexOptions.Compiled);
