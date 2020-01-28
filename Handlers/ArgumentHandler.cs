@@ -58,9 +58,9 @@ namespace NMaier.GetOptNet
       case Type t when t == typeof(uint):
         return uint.Parse(from);
       case Type t when t == typeof(long):
-        return int.Parse(from);
+        return long.Parse(from);
       case Type t when t == typeof(ulong):
-        return uint.Parse(from);
+        return ulong.Parse(from);
       case Type t when t == typeof(DirectoryInfo):
         return new DirectoryInfo(from.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
       case Type t when t == typeof(FileInfo):
