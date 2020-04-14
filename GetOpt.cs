@@ -92,6 +92,9 @@ namespace NMaier.GetOptNet
     public void Parse(IEnumerable<string> args)
     {
       Update(args);
+      MaybePickCommand();
+
+      SelectedCommand?.Parse(new string[0]);
       foreach (var h in handlers) {
         try {
           h.Finish();
@@ -100,6 +103,8 @@ namespace NMaier.GetOptNet
           throw new InvalidValueException("Argument has a different type");
         }
       }
+
+      SelectedCommand?.Execute();
     }
   }
 }

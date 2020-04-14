@@ -10,9 +10,9 @@ namespace NMaier.GetOptNet
   /// </summary>
   [Serializable]
   [PublicAPI]
-  public class InvalidValueException : GetOptException
+  public sealed class InvalidValueException : GetOptException
   {
-    protected InvalidValueException(SerializationInfo info, StreamingContext context)
+    private InvalidValueException(SerializationInfo info, StreamingContext context)
       : base(info, context)
     {
     }

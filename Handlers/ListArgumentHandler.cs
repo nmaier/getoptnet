@@ -24,8 +24,7 @@ namespace NMaier.GetOptNet
         throw new ProgrammingErrorException("Unsupported member type");
       }
 
-      InternalElementType = elementType.GetGenericArguments()[0] ??
-                            throw new ProgrammingErrorException($"Cannot get internal type for {memberInfo.Name}");
+      InternalElementType = elementType.GetGenericArguments()[0];
       var addType = Expression.GetActionType(InternalElementType);
       add = Delegate.CreateDelegate(addType, list, "Add", false, true) ??
             throw new ProgrammingErrorException($"Invalid list type for {memberInfo.Name}");

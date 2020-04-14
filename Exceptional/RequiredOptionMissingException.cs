@@ -12,9 +12,9 @@ namespace NMaier.GetOptNet
   /// </summary>
   [Serializable]
   [PublicAPI]
-  public class RequiredOptionMissingException : GetOptException
+  public sealed class RequiredOptionMissingException : GetOptException
   {
-    protected RequiredOptionMissingException(SerializationInfo info, StreamingContext context)
+    private RequiredOptionMissingException(SerializationInfo info, StreamingContext context)
       : base(info, context)
     {
     }

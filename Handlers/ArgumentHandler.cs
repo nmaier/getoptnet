@@ -14,14 +14,14 @@ namespace NMaier.GetOptNet
     private static readonly Dictionary<string, bool> booleans =
       new Dictionary<string, bool>(StringComparer.CurrentCultureIgnoreCase)
       {
-        {"yes", true},
-        {"on", true},
-        {"true", true},
-        {"1", true},
-        {"no", false},
-        {"off", false},
-        {"false", false},
-        {"0", false}
+        { "yes", true },
+        { "on", true },
+        { "true", true },
+        { "1", true },
+        { "no", false },
+        { "off", false },
+        { "false", false },
+        { "0", false }
       };
 
     protected static object InternalConvert([NotNull] string from, [NotNull] Type type)
@@ -38,11 +38,7 @@ namespace NMaier.GetOptNet
       case Type t when t == typeof(string):
         return from;
       case Type t when t == typeof(bool):
-        if (booleans.TryGetValue(from.Trim(), out var b)) {
-          return b;
-        }
-
-        return bool.Parse(from);
+        return booleans.TryGetValue(from.Trim(), out var b) ? b : bool.Parse(from);
       case Type t when t == typeof(byte):
         return byte.Parse(from);
       case Type t when t == typeof(sbyte):
@@ -62,9 +58,9 @@ namespace NMaier.GetOptNet
       case Type t when t == typeof(ulong):
         return uint.Parse(from);
       case Type t when t == typeof(DirectoryInfo):
-        return new DirectoryInfo(from.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        return ToDirectoryInfo(from);
       case Type t when t == typeof(FileInfo):
-        return new FileInfo(from);
+        return ToFileInfo(from);
       }
 
       try {
@@ -76,12 +72,22 @@ namespace NMaier.GetOptNet
           {
             typeof(string)
           }) ?? throw new ProgrammingErrorException("No constructor for type");
-          return ctor.Invoke(new object[] {from});
+          return ctor.Invoke(new object[] { from });
         }
         catch (Exception) {
           throw new NotSupportedException(ex.Message);
         }
       }
+    }
+
+    private static DirectoryInfo ToDirectoryInfo(string from)
+    {
+      return new DirectoryInfo(from.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+    }
+
+    private static FileInfo ToFileInfo(string from)
+    {
+      return new FileInfo(from);
     }
 
     protected readonly object HandledObject;

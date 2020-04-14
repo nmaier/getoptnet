@@ -11,9 +11,9 @@ namespace NMaier.GetOptNet
   /// </summary>
   [Serializable]
   [PublicAPI]
-  public class DuplicateArgumentException : GetOptException
+  public sealed class DuplicateArgumentException : GetOptException
   {
-    protected DuplicateArgumentException(SerializationInfo info, StreamingContext context)
+    private DuplicateArgumentException(SerializationInfo info, StreamingContext context)
       : base(info, context)
     {
     }

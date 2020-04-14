@@ -10,9 +10,9 @@ namespace NMaier.GetOptNet
   /// </summary>
   [Serializable]
   [PublicAPI]
-  public class ProgrammingErrorException : SystemException
+  public sealed class ProgrammingErrorException : SystemException
   {
-    protected ProgrammingErrorException(SerializationInfo info, StreamingContext context)
+    private ProgrammingErrorException(SerializationInfo info, StreamingContext context)
       : base(info, context)
     {
     }

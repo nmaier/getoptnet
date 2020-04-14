@@ -17,9 +17,11 @@ namespace NMaier.GetOptNet
 
     internal override void Assign(string toAssign)
     {
-      if (ShouldAssign(collision)) {
-        InternalAssign(InternalConvert(toAssign));
+      if (!ShouldAssign(collision)) {
+        return;
       }
+
+      InternalAssign(InternalConvert(toAssign));
     }
   }
 }

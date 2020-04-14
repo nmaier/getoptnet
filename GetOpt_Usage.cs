@@ -18,15 +18,43 @@ namespace NMaier.GetOptNet
       return $"<{Join(", ", names)}>";
     }
 
+    private static string MakeHelpVar(Type etype)
+    {
+      switch (etype) {
+      case Type t when t == typeof(bool):
+        return "BOOL";
+      case Type t when t == typeof(ushort):
+        return "USHORT";
+      case Type t when t == typeof(int):
+        return "INT";
+      case Type t when t == typeof(uint):
+        return "UINT";
+      case Type t when t == typeof(long):
+        return "LONG";
+      case Type t when t == typeof(ulong):
+        return "ULONG";
+      case Type t when t == typeof(DirectoryInfo):
+        return "DIRECTORY";
+      case Type t when t == typeof(FileInfo):
+        return "FILE";
+      case Type t when t == typeof(string):
+        return "...";
+      default:
+        return etype.IsEnum ? FormatEnum(etype) : etype.Name.ToUpper(CultureInfo.CurrentUICulture);
+      }
+    }
+
     /// <summary>
     ///   Assemble Usage.
     /// </summary>
     /// <param name="width">Maximal width of a line in the usage string</param>
     /// <param name="category">Show items for this category only</param>
     /// <param name="fixedWidthFont">Set to true when you intent to display the resulting message using a fixed width font</param>
+    /// <param name="introAndEpilogue">Also add the usage intro and epilogue</param>
+    /// <param name="includeCommands">Include commands as well</param>
     /// <returns>Usage</returns>
     [PublicAPI]
-    public string AssembleUsage(int width, HelpCategory category = HelpCategory.Basic, bool fixedWidthFont = true)
+    public virtual string AssembleUsage(int width, HelpCategory category = HelpCategory.Basic, bool fixedWidthFont = true, bool introAndEpilogue = true, bool includeCommands = true)
     {
       var nl = Environment.NewLine;
       var rv = new StringBuilder();
@@ -34,47 +62,69 @@ namespace NMaier.GetOptNet
                      GetCallingAssembly();
       var image = new FileInfo(assembly.Location).Name;
 
-      rv.Append(GetUsageIntro(image));
-      rv.Append(nl);
-      rv.Append(nl);
-      rv.Append("Options:");
-      rv.Append(nl);
-
-      var options = CollectOptInfos(category);
-      var maxLine = (long)width / 2;
-      var maxArg = width / 4;
-      maxArg = options.Count > 0 ? maxArg : Math.Max((from o in options
-                         let len = o.Argtext.Length + 3
-                         where len <= maxLine
-                         select len).Max(), maxArg);
-      foreach (var o in options) {
-        rv.Append(o.Argtext);
-        var len = o.Argtext.Length;
-        if (!fixedWidthFont || len > maxLine) {
+      if (introAndEpilogue) {
+        var intro = GetUsageIntro(image, Empty);
+        if (!IsNullOrEmpty(intro)) {
+          rv.Append(intro);
           rv.Append(nl);
-          len = 0;
         }
+      }
 
-        rv.Append(new string(' ', maxArg - len));
-
-        len = width - maxArg;
-        var words = new Queue<string>(o.Helptext.Split(' ', '\t'));
-        while (words.Count != 0) {
-          var w = words.Dequeue() + " ";
-          if (len < w.Length) {
-            rv.Append(nl);
-            rv.Append(new string(' ', maxArg));
-            len = width - maxArg;
-          }
-
-          rv.Append(w);
-          len -= w.Length;
+      if (includeCommands && commands.Count > 0) {
+        rv.Append(nl);
+        rv.Append("Commands:");
+        rv.Append(nl);
+        var maxname = commands.Keys.Max(e => e.Length);
+        foreach (var cmd in commands.ToArray().OrderBy(e => e.Key, StringComparer.OrdinalIgnoreCase)) {
+          rv.Append($"  {cmd.Key.PadRight(maxname)} - {cmd.Value.GetUsageIntro(cmd.Value.opts.UsageIntro, cmd.Key)}{nl}");
         }
 
         rv.Append(nl);
       }
 
-      if (!IsNullOrEmpty(opts.UsageEpilog)) {
+      var options = CollectOptInfos(category);
+      if (options.Count > 0) {
+        rv.Append(nl);
+        rv.Append("Options:");
+        rv.Append(nl);
+
+        var maxLine = (long)width / 2;
+        var maxArg = width / 4;
+        maxArg = options.Count > 0
+          ? maxArg
+          : Math.Max((from o in options
+                      let len = o.Argtext.Length + 3
+                      where len <= maxLine
+                      select len).Max(), maxArg);
+        foreach (var o in options) {
+          rv.Append(o.Argtext);
+          var len = o.Argtext.Length;
+          if (!fixedWidthFont || len > maxLine) {
+            rv.Append(nl);
+            len = 0;
+          }
+
+          rv.Append(new string(' ', Math.Max(1, maxArg - len)));
+
+          len = width - maxArg;
+          var words = new Queue<string>(o.Helptext.Split(' ', '\t'));
+          while (words.Count != 0) {
+            var w = words.Dequeue() + " ";
+            if (len < w.Length) {
+              rv.Append(nl);
+              rv.Append(new string(' ', maxArg));
+              len = width - maxArg;
+            }
+
+            rv.Append(w);
+            len -= w.Length;
+          }
+
+          rv.Append(nl);
+        }
+      }
+
+      if (introAndEpilogue && !IsNullOrEmpty(opts.UsageEpilog)) {
         rv.Append(nl);
         rv.Append(opts.UsageEpilog);
       }
@@ -109,7 +159,6 @@ namespace NMaier.GetOptNet
     {
       var options = new List<OptInfo>();
       foreach (var info in GetMemberInfos()) {
-        string name;
         var shortArgs = info.GetAttributes<ShortArgumentAttribute>();
         var longArgs = info.GetAttributes<ArgumentAttribute>();
         if (longArgs.Length == 0) {
@@ -129,14 +178,13 @@ namespace NMaier.GetOptNet
           longName = longName.ToLower();
         }
 
-        name = shortArgs.Length != 0 ? new string(shortArgs[0].Arg, 1) : longName;
+        var name = shortArgs.Length != 0 ? new string(shortArgs[0].Arg, 1) : longName;
 
         GetMemberType(info);
 
         var helpVar = longArgs[0].HelpVar?.ToUpper(CultureInfo.CurrentUICulture);
         if (IsNullOrEmpty(helpVar)) {
-          var etype = longs[longName].ElementType;
-          helpVar = etype.IsEnum ? FormatEnum(etype) : etype.Name.ToUpper(CultureInfo.CurrentUICulture);
+          helpVar = MakeHelpVar(longs[longName].ElementType);
         }
 
         var arg = longArgs[0];
@@ -171,13 +219,51 @@ namespace NMaier.GetOptNet
       }
 
       options.Sort();
+
+      if (parameters == null) {
+        return options;
+      }
+
+      var paramInfo = parameters.Info.GetAttribute<ParametersAttribute>();
+      var paramVar = paramInfo.HelpVar?.ToUpper(CultureInfo.CurrentUICulture);
+      if (IsNullOrEmpty(paramVar)) {
+        paramVar = MakeHelpVar(parameters.ElementType);
+      }
+
+      OptInfo item;
+      switch (parameters.Min) {
+      case 1 when parameters.Min == parameters.Max:
+        item = new OptInfo(paramVar, false, "Positional parameter", Empty,
+                           ArgumentPrefixTypes.None, false);
+        break;
+      default:
+        item = new OptInfo(paramVar, false, "Positional parameters", Empty,
+                           ArgumentPrefixTypes.None, true);
+        break;
+      }
+
+      item.Longs.Add(paramVar);
+
+      options.Add(item);
       return options;
     }
 
-    private string GetUsageIntro(string image)
+    protected virtual string GetUsageIntro(string image, string command)
     {
       if (!IsNullOrEmpty(opts.UsageIntro)) {
         return opts.UsageIntro;
+      }
+
+      if (!IsNullOrEmpty(command)) {
+        image = $"{image} {command}";
+      }
+
+      if (parameters == null && commands.Count <= 0) {
+        return $"Usage: {image} [OPTION] [...]";
+      }
+
+      if (commands.Count > 0) {
+        return $"Usage: {image} [OPTION] [...] <command> [COMMAND OPTION] [...]";
       }
 
       if (parameters == null) {
@@ -185,21 +271,20 @@ namespace NMaier.GetOptNet
       }
 
       var paramInfo = parameters.Info.GetAttribute<ParametersAttribute>();
-      if (parameters.Min == 1 && parameters.Min == parameters.Max) {
+      switch (parameters.Min) {
+      case 1 when parameters.Min == parameters.Max:
         return $"Usage: {image} [OPTION] [...] {paramInfo.HelpVar}";
-      }
-
-      if (parameters.Min == 2 && parameters.Min == parameters.Max) {
+      case 2 when parameters.Min == parameters.Max:
         return Format(
           "Usage: {0} [OPTION] [...] {1} {1}", image, paramInfo.HelpVar);
-      }
+      default:
+        if (parameters.Min > 0 && parameters.Min == parameters.Max) {
+          return $"Usage: {image} [OPTION] [...] {paramInfo.HelpVar}*{parameters.Min}";
+        }
 
-      if (parameters.Min > 0 && parameters.Min == parameters.Max) {
-        return $"Usage: {image} [OPTION] [...] {paramInfo.HelpVar}*{parameters.Min}";
+        return Format(
+          "Usage: {0} [OPTION] [...] {1} {1} ...", image, paramInfo.HelpVar);
       }
-
-      return Format(
-        "Usage: {0} [OPTION] [...] {1} {1} ...", image, paramInfo.HelpVar);
     }
   }
 }

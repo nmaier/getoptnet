@@ -46,8 +46,21 @@ namespace NMaier.GetOptNet
         }
 
         foreach (var a in Longs) {
-          arg.Append(prefix == ArgumentPrefixTypes.Dashes ? "--" : "/");
-          if (flag) {
+          switch (prefix) {
+          case ArgumentPrefixTypes.Both:
+          case ArgumentPrefixTypes.Dashes:
+            arg.Append("--");
+            break;
+          case ArgumentPrefixTypes.None:
+            break;
+          case ArgumentPrefixTypes.Slashes:
+            arg.Append("/");
+            break;
+          default:
+            throw new ArgumentOutOfRangeException();
+          }
+
+          if (flag || IsNullOrEmpty(helpVar)) {
             arg.AppendFormat("{0}, ", a);
           }
           else {

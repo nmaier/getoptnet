@@ -11,9 +11,9 @@ namespace NMaier.GetOptNet
   /// </summary>
   [Serializable]
   [PublicAPI]
-  public class UnknownAttributeException : GetOptException
+  public sealed class UnknownAttributeException : GetOptException
   {
-    protected UnknownAttributeException(SerializationInfo info, StreamingContext context)
+    private UnknownAttributeException(SerializationInfo info, StreamingContext context)
       : base(info, context)
     {
     }

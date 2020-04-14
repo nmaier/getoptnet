@@ -29,7 +29,7 @@ namespace NMaier.GetOptNet
     /// <summary>
     ///   Help variable text to be used in usage output
     /// </summary>
-    public string HelpVar { get; set; } = "param";
+    public string HelpVar { get; set; } = string.Empty;
 
     /// <summary>
     ///   Maxiumum number of required parameters

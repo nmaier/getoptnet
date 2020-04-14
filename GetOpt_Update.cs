@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
+using JetBrains.Annotations;
 using static System.String;
 
 namespace NMaier.GetOptNet
@@ -13,10 +14,7 @@ namespace NMaier.GetOptNet
       try {
         handler.Assign(value);
       }
-      catch (ArgumentException ex) {
-        throw new ProgrammingErrorException(ex.Message);
-      }
-      catch (NotSupportedException ex) {
+      catch (Exception ex) when (ex is NotSupportedException || ex is ArgumentException) {
         throw new InvalidValueException(
           Format(
             CultureInfo.CurrentCulture,
@@ -67,32 +65,40 @@ namespace NMaier.GetOptNet
         throw new ArgumentException("args may not be null");
       }
 
-      var enumerator = args.GetEnumerator();
+      UpdateArguments(args.GetEnumerator());
+    }
+
+    protected HandleResult MaybeUpdateCommand(string current, [NotNull] IEnumerator<string> enumerator)
+    {
+      if ((opts.AcceptPrefixType & ArgumentPrefixTypes.Dashes) != 0) {
+        var result = MaybeHandleDashArgument(current, enumerator);
+        if (result != HandleResult.NotHandled) {
+          return result;
+        }
+      }
+
+      if ((opts.AcceptPrefixType & ArgumentPrefixTypes.Slashes) != 0) {
+        var result = MaybeHandleSlashArgument(current, enumerator);
+        if (result != HandleResult.NotHandled) {
+          return result;
+        }
+      }
+
+      UpdateParameters(current);
+      return HandleResult.Handled;
+    }
+
+    protected void UpdateArguments([NotNull] IEnumerator<string> enumerator)
+    {
       while (enumerator.MoveNext()) {
         var current = enumerator.Current;
-        if ((opts.AcceptPrefixType & ArgumentPrefixTypes.Dashes) != 0) {
-          var result = MaybeHandleDashArgument(current, enumerator);
-          if (result == HandleResult.Handled) {
-            continue;
-          }
-
-          if (result == HandleResult.Stop) {
-            break;
-          }
+        var result = MaybeUpdateCommand(current, enumerator);
+        if (result == HandleResult.Stop) {
+          break;
         }
 
-        if ((opts.AcceptPrefixType & ArgumentPrefixTypes.Slashes) != 0) {
-          var result = MaybeHandleSlashArgument(current, enumerator);
-          if (result == HandleResult.Handled) {
-            continue;
-          }
-
-          if (result == HandleResult.Stop) {
-            break;
-          }
+        if (result == HandleResult.Handled) {
         }
-
-        UpdateParameters(current);
       }
 
       // Consume remainder
@@ -101,8 +107,24 @@ namespace NMaier.GetOptNet
       }
     }
 
-    private void HandleUnknownArgument(string arg, string val)
+    private void MaybePickCommand()
     {
+      if (SelectedCommand == null && defaultCommand != null && commands.TryGetValue(defaultCommand, out var sel)) {
+        SelectedCommand = sel;
+      }
+    }
+
+    private void HandleUnknownArgument(string arg, IEnumerator<string> enumerator, bool shortArg = false)
+    {
+      // Shortargs are handled, in full, elsewhere
+      if (!shortArg) {
+        MaybePickCommand();
+        var selected = SelectedCommand?.MaybeUpdateCommand(arg, enumerator);
+        if (selected.HasValue && selected != HandleResult.NotHandled) {
+          return;
+        }
+      } 
+
       switch (opts.OnUnknownArgument) {
       case UnknownArgumentsAction.Throw:
         throw new UnknownAttributeException(
@@ -110,10 +132,6 @@ namespace NMaier.GetOptNet
 
       case UnknownArgumentsAction.PlaceInParameters:
         UpdateParameters(arg);
-        if (!IsNullOrEmpty(val)) {
-          UpdateParameters(val);
-        }
-
         break;
       case UnknownArgumentsAction.Ignore:
         break;
@@ -137,7 +155,7 @@ namespace NMaier.GetOptNet
 
         var val = m.Groups[2].Value;
         if (!longs.TryGetValue(longArg, out var h)) {
-          HandleUnknownArgument(longArg, val);
+          HandleUnknownArgument(c, e);
           return HandleResult.Handled;
         }
 
@@ -168,7 +186,13 @@ namespace NMaier.GetOptNet
       for (var i = 0; i < singles.Length; ++i) {
         var currentArg = singles[i];
         if (!shorts.TryGetValue(currentArg, out var h)) {
-          HandleUnknownArgument(new string(currentArg, 1), null);
+          MaybePickCommand();
+          var selected = SelectedCommand?.MaybeUpdateCommand(c, e);
+          if (selected.HasValue && selected != HandleResult.NotHandled) {
+            break;
+          }
+
+          HandleUnknownArgument($"-{new string(currentArg, 1)}", e, true);
           continue;
         }
 
@@ -179,7 +203,7 @@ namespace NMaier.GetOptNet
           }
 
           if (IsNullOrEmpty(val)) {
-            throw new InvalidValueException($"Omitted value for argument \"{currentArg}\"");
+            throw new InvalidValueException($"Omitted value for short argument \"{currentArg}\"");
           }
 
           UpdateHandler(h, val, new string(currentArg, 1));
@@ -205,7 +229,7 @@ namespace NMaier.GetOptNet
       if (arg.Length == 1) {
         var shortarg = arg[0];
         if (!shorts.TryGetValue(shortarg, out handler)) {
-          HandleUnknownArgument(arg, val);
+          HandleUnknownArgument(c, e);
           return HandleResult.Handled;
         }
 
@@ -235,7 +259,7 @@ namespace NMaier.GetOptNet
       }
 
       if (!longs.TryGetValue(arg, out handler)) {
-        HandleUnknownArgument(arg, val);
+        HandleUnknownArgument(c, e);
         return HandleResult.Handled;
       }
 
@@ -252,6 +276,16 @@ namespace NMaier.GetOptNet
 
     private void UpdateParameters(string value)
     {
+      if (SelectedCommand == null && commands.TryGetValue(value, out var sel)) {
+        SelectedCommand = sel;
+        return;
+      }
+
+      if (SelectedCommand?.parameters != null) {
+        SelectedCommand.UpdateParameters(value);
+        return;
+      }
+
       if (parameters == null) {
         if (opts.OnUnknownArgument == UnknownArgumentsAction.Ignore) {
           return;
@@ -264,7 +298,7 @@ namespace NMaier.GetOptNet
       UpdateHandler(parameters, value, "<parameters>");
     }
 
-    private enum HandleResult
+    protected enum HandleResult
     {
       Handled,
       NotHandled,

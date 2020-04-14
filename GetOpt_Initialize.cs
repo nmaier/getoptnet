@@ -91,9 +91,9 @@ namespace NMaier.GetOptNet
     private IEnumerable<MemberInfo> GetMemberInfos()
     {
       var me = GetType();
-      const BindingFlags flags = BindingFlags.DeclaredOnly | BindingFlags.Public |
+      const BindingFlags FLAGS = BindingFlags.DeclaredOnly | BindingFlags.Public |
                                  BindingFlags.Instance;
-      return me.GetFields(flags).Cast<MemberInfo>().Concat(me.GetProperties(flags)).ToArray();
+      return me.GetFields(FLAGS).Cast<MemberInfo>().Concat(me.GetProperties(FLAGS)).ToArray();
     }
 
     private void Initialize()

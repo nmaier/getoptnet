@@ -41,14 +41,14 @@ namespace NMaier.GetOptNet
     /// <summary>
     ///   User-definable help text.
     ///   See also: <seealso cref="GetOpt.PrintUsage(HelpCategory)" />,
-    ///   <seealso cref="GetOpt.AssembleUsage(int,HelpCategory,bool)" />
+    ///   <seealso cref="GetOpt.AssembleUsage" />
     /// </summary>
     public string HelpText { get; set; } = Empty;
 
     /// <summary>
     ///   Variable name to display in Usage.
     ///   See also: <seealso cref="GetOpt.PrintUsage(HelpCategory)" />,
-    ///   <seealso cref="GetOpt.AssembleUsage(int,HelpCategory,bool)" />
+    ///   <seealso cref="GetOpt.AssembleUsage" />
     /// </summary>
     public string HelpVar { get; set; } = Empty;
 

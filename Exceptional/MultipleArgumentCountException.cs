@@ -10,9 +10,9 @@ namespace NMaier.GetOptNet
   /// </summary>
   [Serializable]
   [PublicAPI]
-  public class MultipleArgumentCountException : GetOptException
+  public sealed class MultipleArgumentCountException : GetOptException
   {
-    protected MultipleArgumentCountException(SerializationInfo info, StreamingContext context)
+    private MultipleArgumentCountException(SerializationInfo info, StreamingContext context)
       : base(info, context)
     {
     }
