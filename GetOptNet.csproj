@@ -14,12 +14,11 @@
     <Description>Commandline Argument Parser for .Net</Description>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <!--<PackageLicenseUrl>https://raw.github.com/nmaier/getoptnet/master/LICENSE</PackageLicenseUrl>-->
     <PackageProjectUrl>https://github.com/nmaier/getoptnet</PackageProjectUrl>
     <PackageTags>GetOpt, option, options, optparse, arguments, args, argparse, command line</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/nmaier/getoptnet</RepositoryUrl>
-    <Version>4.0.7</Version>
+    <Version>4.0.8</Version>
     
     <Deterministic>true</Deterministic>
     <DebugType>pdbonly</DebugType>
